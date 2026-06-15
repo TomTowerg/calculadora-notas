@@ -16,3 +16,11 @@ build/
 # Entorno
 .env
 .env.local
+
+# Claude Code
+.claude/
+claudehub-lock.json
+package.json
+package-lock.json
+_test*.mjs
+_shot_*.png

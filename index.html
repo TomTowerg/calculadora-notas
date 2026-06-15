@@ -1,765 +1,3031 @@
-<!DOCTYPE html>
-<html lang="es">
+﻿<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora de notas</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-  :root{
-    --ink:#1e2533;--muted:#6b7280;--line:#e7e9f2;--card:#ffffff;
-    --accent:#6366f1;--accent-2:#8b5cf6;--accent-soft:#eef0ff;
-    --good:#059669;--good-soft:#e7f8ef;--good-line:#bbf3d6;
-    --bad:#e11d48;--bad-soft:#ffeef1;--bad-line:#ffd2dc;
-    --warn:#c2710c;--warn-soft:#fff5e3;--warn-line:#fbe1b0;
-    --radius:18px;--shadow:0 1px 2px rgba(30,40,80,.05),0 6px 20px rgba(30,40,80,.05);
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;min-height:100vh;color:var(--ink);
-    background:radial-gradient(1200px 500px at 80% -10%,#eef0ff 0,transparent 60%),
-               radial-gradient(900px 500px at -10% 10%,#e7f8ef 0,transparent 55%),
-               linear-gradient(180deg,#f7f8fc,#f4f5fb);
-    font-family:"Inter","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
-    font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:1120px;margin:0 auto;padding:22px 18px 90px}
-  header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
-  .brand{display:flex;gap:13px;align-items:center}
-  .logo{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;font-size:26px;
-    background:linear-gradient(135deg,#eef0ff,#e7f8ef);border:1px solid var(--line);box-shadow:var(--shadow)}
-  header.top h1{font-size:23px;margin:0;letter-spacing:-.02em;font-weight:800}
-  header.top p{margin:3px 0 0;color:var(--muted);font-size:13px}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-  button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);
-    padding:9px 14px;border-radius:11px;transition:.14s;box-shadow:var(--shadow);font-weight:500}
-  button:hover{transform:translateY(-1px);border-color:#cfd4ec}
-  button:active{transform:translateY(0)}
-  button.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent}
-  button.ghost{box-shadow:none;background:rgba(255,255,255,.6)}
-  button.tiny{padding:4px 10px;font-size:13px;border-radius:9px}
-  button.danger:hover{border-color:var(--bad);color:var(--bad)}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
-  .tab{padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.7);
-    box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:9px;max-width:260px;transition:.14s}
-  .tab:hover{transform:translateY(-1px)}
-  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:#fff;font-weight:600}
-  .tab .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
-  .tab .x{opacity:.5;font-weight:800;line-height:1;cursor:pointer}
-  .tab.active .x{opacity:.8} .tab .x:hover{opacity:1}
-  .tab.add{border-style:dashed;color:var(--accent);font-weight:600;background:transparent;box-shadow:none}
-  .namebar{margin-bottom:18px}
-  .namelabel{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px;font-weight:600}
-  .coursename{font-size:20px;font-weight:700;border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#fff;width:100%;max-width:440px;box-shadow:var(--shadow)}
-  .coursename:focus{outline:3px solid var(--accent-soft);border-color:var(--accent)}
-  .grid{display:grid;grid-template-columns:1.32fr 1fr;gap:18px;align-items:start}
-  .collapsible .chead{display:flex;align-items:center;gap:8px;width:100%;background:transparent;border:none;box-shadow:none;padding:0;margin:0;cursor:pointer;font:inherit;color:var(--ink);text-align:left}
-  .collapsible .chead:hover{transform:none}
-  .collapsible .ctitle{font-size:13px;font-weight:700;flex:0 0 auto}
-  .collapsible .chead .ic{font-size:16px}
-  .collapsible .csummary{margin-left:6px;font-size:12px;color:var(--muted);font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 auto;min-width:0}
-  .collapsible .chev{margin-left:auto;font-size:17px;line-height:1;color:var(--muted);transition:transform .22s ease;flex:0 0 auto}
-  .collapsible.open .chev{transform:rotate(180deg)}
-  .collapsible.open .csummary{display:none}
-  .cbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .22s ease}
-  .cbody>.cbody-inner{overflow:hidden;min-height:0}
-  .collapsible.open .cbody{grid-template-rows:1fr}
-  .cbody-inner{padding-top:14px}
-  @media(max-width:880px){
-    .grid{display:flex;flex-direction:column;gap:0}
-    .grid>.col{display:contents}
-    .o1{order:1}.o2{order:2}.o3{order:3}.o4{order:4}.o5{order:5}
-  }
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
-  .card h2{font-size:13px;letter-spacing:.02em;color:var(--ink);margin:0 0 14px;font-weight:700;display:flex;align-items:center;gap:8px}
-  .card h2 .ic{font-size:16px}
-  .card h2 .hint{margin-left:auto;font-weight:400;font-size:12px;color:var(--muted)}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
-  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
-  .field label{font-size:12px;color:var(--muted);font-weight:500}
-  input,select{font:inherit;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;color:var(--ink);width:100%}
-  input:focus,select:focus{outline:3px solid var(--accent-soft);border-color:var(--accent)}
-  select{cursor:pointer}
-  table{width:100%;border-collapse:collapse}
-  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;font-weight:600;padding:0 8px 8px}
-  td{padding:5px 8px 5px 0;vertical-align:middle}
-  td:first-child{padding-left:0}
-  .ev-name input{min-width:90px}
-  .num{width:74px;text-align:center}
-  tfoot td{padding-top:12px;border-top:1px solid var(--line)}
-  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid transparent}
-  .chip.ok{background:var(--good-soft);color:var(--good);border-color:var(--good-line)}
-  .chip.no{background:var(--bad-soft);color:var(--bad);border-color:var(--bad-line)}
-  .chip.warn{background:var(--warn-soft);color:var(--warn);border-color:var(--warn-line)}
-  .chip.neutral{background:#eef1f6;color:var(--muted)}
-  .chip.small{font-size:11px;padding:2px 8px}
-  .nota{font-weight:800;font-variant-numeric:tabular-nums}
-  .nota.ok{color:var(--good)} .nota.no{color:var(--bad)}
-  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-  .stat{border-radius:15px;padding:14px 16px;border:1px solid var(--line);background:#fbfcff}
-  .stat.good{background:var(--good-soft);border-color:var(--good-line)}
-  .stat.bad{background:var(--bad-soft);border-color:var(--bad-line)}
-  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
-  .stat .v{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px;line-height:1.05}
-  .stat .s{font-size:12px;color:var(--muted);margin-top:3px}
-  .banner{border-radius:14px;padding:13px 15px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:9px;margin:4px 0 6px}
-  .banner.ok{background:var(--good-soft);color:var(--good);border:1px solid var(--good-line)}
-  .banner.no{background:var(--bad-soft);color:var(--bad);border:1px solid var(--bad-line)}
-  .banner.warn{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-line)}
-  .banner.neutral{background:#eef1f6;color:var(--muted);font-weight:600}
-  .scenarios{padding:0;margin:8px 0 0;list-style:none}
-  .scenarios li{margin:7px 0} .scenarios .lbl{color:var(--muted);font-size:13px}
-  .seclabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-top:14px}
-  .calc{background:#fbfcff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-  .calc .q{font-size:13px;color:var(--muted);margin-bottom:9px;font-weight:500}
-  .calc .res{font-size:15px;margin-top:9px}
-  .calc .big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
-  .inline{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
-  .inline input{width:84px}
-  .cond{display:flex;gap:7px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
-  .cond select,.cond input{width:auto;flex:0 0 auto}
-  .cond .sub{flex:1 1 140px;min-width:130px}
-  .rulebox{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px;background:#fbfcff}
-  .rulebox .rt{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:6px}
-  .rulebox .rt b{color:var(--ink)}
-  .orsep{text-align:center;color:var(--accent);font-size:12px;font-weight:800;margin:8px 0;letter-spacing:.1em}
-  .condresult{margin-left:auto;display:flex;align-items:center;gap:6px}
-  .muted{color:var(--muted)} .small{font-size:12px}
-  /* segmented + category panel */
-  .seg{display:inline-flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)}
-  .segbtn{border:none;border-radius:0;box-shadow:none;background:#fff;color:var(--muted);padding:7px 14px;font-weight:600;transform:none}
-  .segbtn:hover{transform:none;background:#f6f7fb}
-  .segbtn.on{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
-  .modehint{font-size:12px;color:var(--muted);margin:-4px 0 12px}
-  .autow{font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
-  .relcell{display:flex;align-items:center;gap:7px}
-  .rel{width:52px}
-  .catpanel{border:1px solid var(--line);border-radius:14px;padding:12px;margin:4px 0 12px;background:#fbfcff}
-  .catpanel .cpt{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:9px}
-  .catrow{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-  .catrow .cn{flex:1;font-weight:600}
-  .catrow input{width:92px}
-  .catrow .ce{font-size:12px;color:var(--muted);width:78px;text-align:right}
-  footer{margin-top:30px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
-  .hidden{display:none}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gradiant</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ─── TOKENS ─── */
+    :root {
+      color-scheme: dark;
+      --bg: #0a0c10;
+      --bg-2: #10131a;
+      --surface: #14182a;
+      --surface-2: #1a1e2e;
+      --border: #242840;
+      --border-2: #303550;
+      --ink: #f0f4f8;
+      --ink-2: #8896aa;
+      --muted: #5a6880;
+      --accent: #e2e8f0;
+      --accent-d: #b8c4d4;
+      --accent-s: rgba(226, 232, 240, .09);
+      --good: #4ade80;
+      --good-s: rgba(74, 222, 128, .18);
+      --good-b: rgba(74, 222, 128, .34);
+      --bad: #f87171;
+      --bad-s: rgba(248, 113, 113, .18);
+      --bad-b: rgba(248, 113, 113, .34);
+      --warn: #fb923c;
+      --warn-s: rgba(251, 146, 60, .18);
+      --warn-b: rgba(251, 146, 60, .34);
+      --r: 13px;
+      --r2: 9px;
+      --font: "Inter", "Segoe UI", system-ui, sans-serif;
+      --t: .16s ease;
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --bg-2: #f1f5f9;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --border-2: #cbd5e1;
+      --ink: #0f172a;
+      --ink-2: #334155;
+      --muted: #64748b;
+      --accent: #334155;
+      --accent-d: #1e293b;
+      --accent-s: rgba(51, 65, 85, .09);
+      --good: #16a34a;
+      --good-s: #f0fdf4;
+      --good-b: #bbf7d0;
+      --bad: #dc2626;
+      --bad-s: #fff1f2;
+      --bad-b: #fecdd3;
+      --warn: #d97706;
+      --warn-s: #fffbeb;
+      --warn-b: #fde68a;
+    }
+
+    /* ─── RESET ─── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--ink);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      transition: background var(--t), color var(--t);
+    }
+
+    [data-theme="dark"] body {
+      background:
+        radial-gradient(ellipse 100% 50% at 50% -10%, rgba(226, 232, 240, .04) 0%, transparent 55%),
+        var(--bg);
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 52px;
+      background: rgba(10, 12, 16, .92);
+      backdrop-filter: blur(16px) saturate(1.6);
+      -webkit-backdrop-filter: blur(16px) saturate(1.6);
+      border-bottom: 1px solid rgba(226, 232, 240, .08);
+      box-shadow: 0 1px 0 rgba(226, 232, 240, .04), 0 4px 20px rgba(0, 0, 0, .5);
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background var(--t), border-color var(--t);
+    }
+
+    [data-theme="light"] .topbar {
+      background: rgba(255, 255, 255, .9);
+      border-bottom-color: rgba(0, 0, 0, .12);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, .05), 0 2px 12px rgba(0, 0, 0, .08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border: none;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 12px rgba(99, 102, 241, .45), 0 1px 4px rgba(0, 0, 0, .25);
+    }
+
+    .brand-mark svg {
+      color: #fff;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+    }
+
+    [data-theme="light"] .brand-mark {
+      box-shadow: 0 2px 10px rgba(99, 102, 241, .35), 0 1px 3px rgba(0, 0, 0, .15);
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    [data-theme="dark"] .brand-name {
+      background: linear-gradient(90deg, #a5b4fc, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .topbar-gap {
+      flex: 1
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ─── TABS ─── */
+    .tabs-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 22px;
+      display: flex;
+      align-items: stretch;
+      overflow-x: auto;
+      scrollbar-width: none;
+      min-height: 42px;
+      transition: background var(--t), border-color var(--t);
+    }
+
+    .tabs-bar::-webkit-scrollbar {
+      display: none
+    }
+
+    .tab-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 15px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font: 500 12.5px/1 var(--font);
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color var(--t), border-color var(--t);
+    }
+
+    .tab-btn:hover {
+      color: var(--ink-2)
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+      text-shadow: 0 0 16px rgba(226, 232, 240, .3);
+    }
+
+    [data-theme="light"] .tab-btn.active {
+      text-shadow: none;
+    }
+
+    .tab-grade {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1.5px 6px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      transition: all var(--t);
+    }
+
+    .tab-btn.active .tab-grade {
+      background: var(--accent-s);
+      color: var(--accent);
+    }
+
+    .tab-grade.ok {
+      background: var(--good-s) !important;
+      color: var(--good) !important
+    }
+
+    .tab-grade.warn {
+      background: var(--warn-s) !important;
+      color: var(--warn) !important
+    }
+
+    .tab-grade.no {
+      background: var(--bad-s) !important;
+      color: var(--bad) !important
+    }
+
+    .tab-x {
+      opacity: 0;
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      transition: opacity .12s, background .12s;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .tab-btn:hover .tab-x {
+      opacity: 1
+    }
+
+    .tab-x:hover {
+      background: var(--bad-s) !important;
+      color: var(--bad) !important
+    }
+
+    .tab-add {
+      flex-shrink: 0;
+      align-self: center;
+      margin: 0 0 0 6px;
+      border: 1px dashed var(--border-2);
+      background: transparent;
+      color: var(--muted);
+      font: 500 12px/1 var(--font);
+      padding: 5px 10px;
+      border-radius: var(--r2);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all var(--t);
+    }
+
+    .tab-add:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-s)
+    }
+
+    /* ─── MAIN ─── */
+    .main {
+      padding: 26px 22px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: var(--r2);
+      border: 1px solid var(--border-2);
+      background: var(--surface);
+      color: var(--ink-2);
+      font: 500 12.5px/1 var(--font);
+      cursor: pointer;
+      transition: all var(--t);
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px) scale(1.015);
+      box-shadow: 0 0 14px rgba(226, 232, 240, .14);
+    }
+
+    .btn:active {
+      transform: scale(.99);
+      box-shadow: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: transparent
+    }
+
+    .btn-ghost:hover {
+      background: var(--surface-2);
+      border-color: var(--border)
+    }
+
+    .btn-sm {
+      padding: 4px 9px;
+      font-size: 12px;
+      border-radius: 7px
+    }
+
+    .btn-danger:hover {
+      border-color: var(--bad) !important;
+      color: var(--bad) !important
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all var(--t);
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 12px rgba(226, 232, 240, .16);
+      transform: scale(1.06);
+    }
+
+    /* ─── COURSE HEADER ─── */
+    .course-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .course-name-input {
+      font: 800 26px/1.1 var(--font);
+      letter-spacing: -.05em;
+      color: var(--ink);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      outline: none;
+      padding: 0 0 2px;
+      flex: 1;
+      min-width: 180px;
+      transition: border-color var(--t);
+    }
+
+    .course-name-input::placeholder {
+      color: var(--muted);
+    }
+
+    .course-name-input:focus {
+      border-bottom-color: var(--accent)
+    }
+
+    /* ─── CONTENT GRID ─── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 0 20px;
+      align-items: start
+    }
+
+    /* ─── SECTION BLOCKS ─── */
+    @keyframes blockIn {
+      from {
+        opacity: 0;
+        transform: translateY(7px);
+        filter: blur(2px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+    }
+
+    .block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      transition: background var(--t), border-color var(--t);
+      animation: blockIn .3s cubic-bezier(.4, 0, .2, 1) both;
+      box-shadow: inset 0 1px 0 rgba(226, 232, 240, .06);
+    }
+
+    [data-theme="light"] .block {
+      box-shadow: inset 0 1px 0 rgba(5, 150, 105, .05);
+    }
+
+    .col-left>.block {
+      animation-delay: 0ms;
+    }
+
+    .col-left>div>.block {
+      animation-delay: 55ms;
+    }
+
+    .col-right>.block:nth-child(1) {
+      animation-delay: 80ms;
+    }
+
+    .col-right>.block:nth-child(2) {
+      animation-delay: 115ms;
+    }
+
+    .col-right>div>.block {
+      animation-delay: 150ms;
+    }
+
+    .block-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 16px;
+    }
+
+    .block-title-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--accent-s);
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .c-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      background: var(--accent-s);
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .block-title .hint {
+      margin-left: auto;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .ev-empty-hint {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
+      white-space: nowrap;
+      opacity: .7;
+    }
+
+    /* ─── FORM ─── */
+    input,
+    select {
+      font: inherit;
+      font-size: 13px;
+      border: 1px solid var(--border-2);
+      border-radius: var(--r2);
+      padding: 6px 9px;
+      background: var(--surface-2);
+      color: var(--ink);
+      width: 100%;
+      transition: border-color var(--t), box-shadow var(--t);
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-s);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: auto;
+      -webkit-appearance: auto
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      appearance: auto;
+      -webkit-appearance: auto
+    }
+
+    input[type="checkbox"].cb-circle {
+      appearance: none;
+      -webkit-appearance: none;
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 2px solid var(--border-2);
+      background: var(--surface);
+      cursor: pointer;
+      position: relative;
+      transition: all .15s ease;
+      vertical-align: middle;
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
+
+    input[type="checkbox"].cb-circle:hover {
+      border-color: var(--good);
+    }
+
+    input[type="checkbox"].cb-circle:checked {
+      background: var(--good);
+      border-color: var(--good);
+    }
+
+    input[type="checkbox"].cb-circle::after {
+      content: '';
+      display: none;
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 5px;
+      height: 9px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    input[type="checkbox"].cb-circle:checked::after {
+      display: block;
+    }
+
+    input.g-ok {
+      color: var(--good);
+      font-weight: 700
+    }
+
+    input.g-warn {
+      color: var(--warn);
+      font-weight: 700
+    }
+
+    input.g-no {
+      color: var(--bad);
+      font-weight: 700
+    }
+
+    input.g-inv {
+      border-color: var(--warn);
+      color: var(--warn)
+    }
+
+    /* ─── TABLE ─── */
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    th {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      text-align: left;
+      padding: 0 4px 10px;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 5px 4px;
+      vertical-align: middle
+    }
+
+    td:first-child {
+      padding-left: 0
+    }
+
+    td:last-child {
+      padding-right: 0
+    }
+
+    /* Columnas fijas: categoría, peso, nota, borrar no se estiran */
+    #evBody td:nth-child(3),
+    thead tr th:nth-child(3) { width: 130px; }
+    #evBody td:nth-child(4),
+    thead tr th:nth-child(4) { width: 76px; }
+    .ev-nota { width: 76px; padding-left: 20px !important; }
+    #evBody td:last-child,
+    thead tr th:last-child { width: 32px; }
+
+    tfoot td {
+      padding-top: 12px;
+      border-top: 1px solid var(--border)
+    }
+
+    .num-inp {
+      width: 62px;
+      text-align: center
+    }
+
+    .ev-name input {
+      min-width: 96px
+    }
+
+    #evBody td {
+      border-bottom: 1px solid var(--border);
+      transition: background var(--t), box-shadow var(--t);
+    }
+
+    #evBody tr:last-child td {
+      border-bottom: none;
+    }
+
+    #evBody tr:hover td {
+      background: rgba(99, 102, 241, .08);
+    }
+
+    #evBody tr:hover td.ev-grip {
+      box-shadow: inset 3px 0 0 #6366f1;
+    }
+
+    #evBody tr.dragging {
+      opacity: .35;
+    }
+
+    #evBody tr.drag-over td {
+      background: var(--accent-s);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    .ev-grip {
+      width: 22px;
+      cursor: grab;
+      color: var(--border-2);
+      text-align: center;
+      padding-right: 2px !important;
+      transition: color var(--t);
+    }
+
+    #evBody tr:hover .ev-grip {
+      color: #6366f1;
+    }
+
+    #evBody [data-del] {
+      opacity: 0;
+      transition: opacity var(--t);
+    }
+
+    #evBody tr:hover [data-del] {
+      opacity: 1;
+    }
+
+    /* Grade input colored backgrounds */
+    #evBody .g-ok   { background: var(--good-s); border-color: var(--good-b); font-weight: 700; }
+    #evBody .g-warn { background: var(--warn-s); border-color: var(--warn-b); font-weight: 700; }
+    #evBody .g-no   { background: var(--bad-s);  border-color: var(--bad-b);  font-weight: 700; }
+
+    /* ─── SEG CONTROL ─── */
+    .seg {
+      display: inline-flex;
+      border: 1px solid var(--border-2);
+      border-radius: var(--r2);
+      overflow: hidden;
+      margin-bottom: 14px;
+      background: var(--surface);
+    }
+
+    .seg-btn {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 14px;
+      font: 600 12px/1 var(--font);
+      cursor: pointer;
+      transition: all var(--t);
+    }
+
+    .seg-btn:not(:last-child) {
+      border-right: 1px solid var(--border-2);
+    }
+
+    .seg-btn:hover {
+      background: var(--surface-2);
+      color: var(--ink);
+    }
+
+    .seg-btn.on {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 4px rgba(99,102,241,.35);
+    }
+
+    /* ─── CHIPS ─── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      line-height: 1.5;
+      white-space: nowrap;
+      transition: all .15s ease;
+    }
+
+    .chip.ok {
+      background: var(--good-s);
+      color: var(--good);
+      border-color: var(--good-b);
+      box-shadow: 0 0 8px rgba(74, 222, 128, .12);
+    }
+
+    .chip.no {
+      background: var(--bad-s);
+      color: var(--bad);
+      border-color: var(--bad-b);
+      box-shadow: 0 0 8px rgba(248, 113, 113, .12);
+    }
+
+    .chip.warn {
+      background: var(--warn-s);
+      color: var(--warn);
+      border-color: var(--warn-b);
+    }
+
+    .chip.neu {
+      background: var(--surface-2);
+      color: var(--muted);
+      border-color: var(--border)
+    }
+
+    [data-theme="light"] .chip.ok {
+      box-shadow: none;
+    }
+
+    [data-theme="light"] .chip.no {
+      box-shadow: none;
+    }
+
+    /* ─── STATUS DOT ─── */
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid transparent;
+      transition: all .15s ease;
+    }
+
+    .status-dot.ok {
+      background: var(--good-s);
+      color: var(--good);
+      border-color: var(--good-b);
+    }
+
+    .status-dot.no {
+      background: var(--bad-s);
+      color: var(--bad);
+      border-color: var(--bad-b);
+    }
+
+    .status-dot.pend {
+      background: var(--surface-2);
+      color: var(--muted);
+      border-color: var(--border-2);
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* ─── GRADE HERO ─── */
+    .grade-hero {
+      margin-bottom: 20px;
+      padding: 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      transition: box-shadow .4s ease;
+    }
+
+    .grade-hero[data-gc="ok"] {
+      box-shadow: inset 0 1px 0 rgba(74, 222, 128, .1), 0 0 0 1px rgba(74, 222, 128, .08);
+    }
+
+    .grade-hero[data-gc="warn"] {
+      box-shadow: inset 0 1px 0 rgba(251, 146, 60, .1), 0 0 0 1px rgba(251, 146, 60, .08);
+    }
+
+    .grade-hero[data-gc="no"] {
+      box-shadow: inset 0 1px 0 rgba(248, 113, 113, .1), 0 0 0 1px rgba(248, 113, 113, .08);
+    }
+
+    .gh-top {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .gh-grade {
+      font: 800 54px/1 var(--font);
+      letter-spacing: -.05em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      transition: color .4s ease;
+    }
+
+    .gh-grade.ok {
+      color: var(--good);
+      text-shadow: 0 0 28px rgba(74, 222, 128, .35);
+    }
+
+    .gh-grade.warn {
+      color: var(--warn);
+      text-shadow: 0 0 28px rgba(251, 146, 60, .35);
+    }
+
+    .gh-grade.no {
+      color: var(--bad);
+      text-shadow: 0 0 28px rgba(248, 113, 113, .35);
+    }
+
+    .gh-grade.nd {
+      color: var(--border-2);
+      text-shadow: none;
+    }
+
+    [data-theme="light"] .gh-grade.ok {
+      text-shadow: none;
+    }
+
+    [data-theme="light"] .gh-grade.warn {
+      text-shadow: none;
+    }
+
+    [data-theme="light"] .gh-grade.no {
+      text-shadow: none;
+    }
+
+    .gh-grade-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-bottom: 5px;
+    }
+
+    .gh-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted)
+    }
+
+    .gh-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .gh-bar-track {
+      position: relative;
+      height: 7px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: linear-gradient(90deg, var(--bad) 0%, var(--warn) 48%, var(--good) 100%);
+      transition: box-shadow .5s ease;
+    }
+
+    .grade-hero[data-gc="ok"] .gh-bar-track {
+      box-shadow: 0 0 10px rgba(74, 222, 128, .25);
+    }
+
+    .grade-hero[data-gc="warn"] .gh-bar-track {
+      box-shadow: 0 0 10px rgba(251, 146, 60, .25);
+    }
+
+    .grade-hero[data-gc="no"] .gh-bar-track {
+      box-shadow: 0 0 10px rgba(248, 113, 113, .25);
+    }
+
+    .gh-bar-cover {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--surface);
+      border-radius: 0 4px 4px 0;
+      transition: width .75s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    [data-theme="light"] .gh-bar-cover {
+      background: var(--bg-2);
+    }
+
+    .gh-bar-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 7px;
+    }
+
+    .gh-bar-scale {
+      font-size: 10px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .gh-meta {
+      font-size: 11.5px;
+      color: var(--muted)
+    }
+
+    /* ─── BANNER ─── */
+    .banner {
+      border-radius: var(--r2);
+      padding: 10px 14px;
+      font: 600 13px/1.4 var(--font);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 14px;
+      border: 1px solid transparent;
+    }
+
+    .banner.ok {
+      background: var(--good-s);
+      color: var(--good);
+      border-color: var(--good-b)
+    }
+
+    .banner.no {
+      background: var(--bad-s);
+      color: var(--bad);
+      border-color: var(--bad-b)
+    }
+
+    .banner.warn {
+      background: var(--warn-s);
+      color: var(--warn);
+      border-color: var(--warn-b)
+    }
+
+    .banner.neu {
+      background: var(--surface-2);
+      color: var(--muted);
+      border-color: var(--border)
+    }
+
+    /* ─── NOTA FINAL ─── */
+    .nf-formula {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 14px;
+      border-radius: var(--r2);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      margin-bottom: 14px;
+    }
+
+    .nf-term {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .nf-val {
+      font: 800 24px/1 var(--font);
+      letter-spacing: -.04em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nf-val.ok {
+      color: var(--good)
+    }
+
+    .nf-val.warn {
+      color: var(--warn)
+    }
+
+    .nf-val.no {
+      color: var(--bad)
+    }
+
+    .nf-val.nd {
+      color: var(--muted)
+    }
+
+    .nf-lbl {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .nf-op {
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--border-2);
+      align-self: center;
+    }
+
+    .nf-scenarios {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .nf-scenario {
+      padding: 11px 13px;
+      border-radius: var(--r2);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      transition: all .2s;
+    }
+
+    .nf-scenario-active {
+      border-color: var(--good-b) !important;
+      background: var(--good-s) !important;
+    }
+
+    .nf-scenario-muted {
+      opacity: .5;
+    }
+
+    .nf-scen-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .nf-scen-val {
+      font: 800 22px/1 var(--font);
+      letter-spacing: -.04em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nf-scen-val.ok {
+      color: var(--good)
+    }
+
+    .nf-scen-val.warn {
+      color: var(--warn)
+    }
+
+    .nf-scen-val.no {
+      color: var(--bad)
+    }
+
+    .nf-scen-val.nd {
+      color: var(--muted)
+    }
+
+    .nf-scen-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .exam-sim-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 4px;
+    }
+
+    .exam-sim-row span {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .exam-sim-row input {
+      width: 60px;
+    }
+
+    /* ─── EXEM BREAKDOWN ─── */
+    .exem-breakdown {
+      margin: 0 0 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .exem-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .exem-rule-result {
+      border-radius: var(--r2);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .exem-rule-result.ok {
+      border-color: rgba(74, 222, 128, .25);
+    }
+
+    .exem-rule-result.no {
+      border-color: rgba(248, 113, 113, .2);
+    }
+
+    .exem-rule-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .exem-rule-num {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+    }
+
+    .exem-conds {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cond-notif {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--border-2);
+      border-bottom: 1px solid var(--border);
+      transition: background .2s;
+    }
+
+    .cond-notif:last-child {
+      border-bottom: none;
+    }
+
+    .cond-notif.ok {
+      border-left-color: var(--good);
+      background: var(--good-s);
+    }
+
+    .cond-notif.no {
+      border-left-color: var(--bad);
+      background: var(--bad-s);
+    }
+
+    .cond-notif.pend {
+      border-left-color: var(--border-2);
+    }
+
+    .cond-notif-icon {
+      font-size: 13px;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+
+    .cond-notif.ok .cond-notif-icon {
+      color: var(--good);
+    }
+
+    .cond-notif.no .cond-notif-icon {
+      color: var(--bad);
+    }
+
+    .cond-notif.pend .cond-notif-icon {
+      color: var(--muted);
+    }
+
+    .cond-notif-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cond-notif-title {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+
+    .cond-notif-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .exem-legend {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.8;
+      padding: 8px 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+    }
+
+    .or-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      color: var(--accent);
+      background: var(--accent-s);
+      border: 1px solid rgba(226, 232, 240, .14);
+      border-radius: 999px;
+      padding: 3px 10px;
+      align-self: center;
+    }
+
+    /* ─── COLLAPSIBLE ─── */
+    .coll .c-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font: 600 12px/1 var(--font);
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .c-sum {
+      margin-left: 4px;
+      font-size: 11.5px;
+      color: var(--muted);
+      font-weight: 400;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .c-chev {
+      margin-left: auto;
+      color: var(--muted);
+      transition: transform .2s ease;
+      flex-shrink: 0;
+      font-size: 11px
+    }
+
+    .coll.open .c-chev {
+      transform: rotate(180deg)
+    }
+
+    .coll.open .c-sum {
+      display: none
+    }
+
+    .c-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .22s ease
+    }
+
+    .c-body>.c-in {
+      overflow: hidden;
+      min-height: 0
+    }
+
+    .coll.open .c-body {
+      grid-template-rows: 1fr
+    }
+
+    .c-in {
+      padding-top: 15px
+    }
+
+    /* ─── CALC BLOCK ─── */
+    .calc-blk {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 13px;
+      margin-bottom: 10px;
+      transition: border-color .2s, background .2s;
+    }
+
+    .calc-blk.done {
+      border-color: var(--good-b);
+      background: var(--good-s);
+    }
+
+    .calc-blk.partial {
+      border-color: var(--warn-b);
+      background: var(--warn-s);
+    }
+
+    .calc-q {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 9px
+    }
+
+    .calc-res {
+      margin-top: 9px
+    }
+
+    .exim-need-rule {
+      margin-bottom: 10px;
+    }
+
+    .exim-need-rule:last-child {
+      margin-bottom: 0;
+    }
+
+    .exim-need-hdr {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .exim-need-item {
+      font-size: 12px;
+      padding: 3px 0;
+      display: flex;
+      gap: 6px;
+    }
+
+    .exim-need-item.ok {
+      color: var(--good);
+    }
+
+    .exim-need-item.no {
+      color: var(--ink-2);
+    }
+
+    .calc-big {
+      font-size: 30px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -.04em
+    }
+
+    .calc-big.ok {
+      color: var(--good)
+    }
+
+    .calc-big.warn {
+      color: var(--warn)
+    }
+
+    .calc-big.no {
+      color: var(--bad)
+    }
+
+    .inline-r {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .inline-r input {
+      width: 75px
+    }
+
+    .il {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap
+    }
+
+    /* ─── EXEMPTION RULES EDITOR ─── */
+    .rule-card {
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .rule-card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .rule-num {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      color: var(--muted)
+    }
+
+    .rule-logic {
+      font-size: 11px;
+      color: var(--muted)
+    }
+
+    .rule-card-body {
+      padding: 10px 12px;
+      background: var(--surface-2)
+    }
+
+    .cond-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 6px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cond-item:last-child {
+      border-bottom: none
+    }
+
+    .cond-fields {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      flex-wrap: wrap;
+      min-width: 0
+    }
+
+    .cond-fields select {
+      width: auto;
+      flex-shrink: 0
+    }
+
+    .cond-fields input {
+      width: 70px;
+      flex-shrink: 0
+    }
+
+    .cond-fields .sub {
+      flex: 1 1 110px;
+      min-width: 100px
+    }
+
+    .cond-fields .op {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      padding: 0 2px;
+    }
+
+    .cond-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0
+    }
+
+    .or-sep-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px 0
+    }
+
+    /* ─── CAT PANEL ─── */
+    .cat-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 11px;
+      margin: 0 0 13px;
+      background: var(--surface-2)
+    }
+
+    .cat-panel-t {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 9px
+    }
+
+    .cat-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 7px
+    }
+
+    .cat-row .cn {
+      flex: 1;
+      font-weight: 600;
+      font-size: 13px
+    }
+
+    .cat-row .num-inp {
+      width: 76px
+    }
+
+    .cat-row .cc {
+      font-size: 11.5px;
+      color: var(--muted);
+      width: 54px;
+      text-align: right
+    }
+
+    .relcell {
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .autow {
+      font-weight: 700;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      font-size: 12.5px;
+      white-space: nowrap
+    }
+
+    .rel-inp {
+      width: 44px
+    }
+
+    /* ─── CUSTOM DIALOG ─── */
+    .cat-dialog-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(0, 0, 0, .6);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fdIn .15s ease;
+    }
+
+    @keyframes fdIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    .cat-dialog-box {
+      background: var(--surface);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r);
+      padding: 22px;
+      width: 100%;
+      max-width: 340px;
+      animation: slideUp .18s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(10px);
+        opacity: 0
+      }
+
+      to {
+        transform: none;
+        opacity: 1
+      }
+    }
+
+    .cat-dialog-ttl {
+      font: 700 15px/1 var(--font);
+      letter-spacing: -.02em;
+      margin-bottom: 14px;
+    }
+
+    .cat-dialog-input-wrap {
+      margin-bottom: 16px;
+    }
+
+    .cat-dialog-input-wrap label {
+      display: block;
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600
+    }
+
+    .cat-dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: transparent;
+      border-color: transparent;
+      color: var(--ink-2);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+      transform: translateY(-1px) scale(1.015);
+      box-shadow: 0 0 14px rgba(226, 232, 240, .14);
+    }
+
+    .btn-primary:active {
+      transform: scale(.99);
+      box-shadow: none;
+    }
+
+    .btn-danger-fill {
+      background: transparent;
+      border-color: transparent;
+      color: var(--ink-2);
+      font-weight: 600;
+    }
+
+    .btn-danger-fill:hover {
+      background: var(--bad);
+      border-color: var(--bad);
+      color: #fff;
+      transform: translateY(-1px) scale(1.015);
+    }
+
+    .btn-danger-fill:active {
+      transform: scale(.99);
+    }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      text-align: center
+    }
+
+    .empty-mark {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      margin: 0 auto 20px;
+      background: var(--surface);
+      border: 1px solid var(--border-2);
+      display: grid;
+      place-items: center;
+      color: var(--accent)
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      margin-bottom: 7px
+    }
+
+    .empty-state p {
+      color: var(--muted);
+      max-width: 300px;
+      margin: 0 auto 22px;
+      line-height: 1.6;
+      font-size: 13.5px
+    }
+
+    /* ─── MISC ─── */
+    .hidden {
+      display: none !important
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .small {
+      font-size: 12px
+    }
+
+    .modehint {
+      font-size: 12px;
+      color: var(--muted);
+      margin: -8px 0 13px
+    }
+
+    .sec-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin: 14px 0 8px;
+      display: block
+    }
+
+    .fml {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 5px
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 12px 0
+    }
+
+    footer {
+      text-align: center;
+      padding: 14px 20px 32px;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.6
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 860px) {
+      .content-grid {
+        grid-template-columns: 1fr
+      }
+
+      .main {
+        padding: 16px 14px 60px
+      }
+
+      .nf-scenarios {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media (max-width: 520px) {
+      .course-name-input {
+        font-size: 20px
+      }
+
+      .btn-label {
+        display: none
+      }
+
+      .gh-grade {
+        font-size: 42px
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <div class="logo">🎓</div>
-      <div>
-        <h1>Calculadora de notas</h1>
-        <p>Ponderaciones, eximición y “¿qué nota necesito?” · escala 1.0–7.0</p>
+  <div style="display:flex;flex-direction:column;min-height:100vh">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+          </svg>
+        </div>
+        <span class="brand-name">Gradiant</span>
+      </div>
+      <div class="topbar-gap"></div>
+      <div class="topbar-right">
+        <button class="icon-btn" id="btnTheme" title="Cambiar tema"></button>
+        <button class="btn btn-ghost btn-sm" id="btnImport">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <span class="btn-label">Importar</span>
+        </button>
+        <button class="btn btn-ghost btn-sm" id="btnExport">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span class="btn-label">Exportar</span>
+        </button>
+        <input type="file" id="fileImport" accept="application/json" class="hidden">
+      </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="tabs-bar" id="tabsBar"></div>
+
+    <!-- MAIN -->
+    <main class="main" id="mainPanel"></main>
+
+    <!-- CUSTOM CATEGORY DIALOG -->
+    <div id="catDialogOverlay" class="cat-dialog-overlay hidden" role="dialog" aria-modal="true"
+      aria-labelledby="catDialogTtl">
+      <div class="cat-dialog-box">
+        <div class="cat-dialog-ttl" id="catDialogTtl">Nueva categoría</div>
+        <div class="cat-dialog-input-wrap">
+          <label for="catDialogInput">Nombre</label>
+          <input id="catDialogInput" placeholder="Ej: Laboratorio, Tarea…" autocomplete="off">
+        </div>
+        <div class="cat-dialog-footer">
+          <button class="btn btn-ghost btn-sm" id="catDialogCancel">Cancelar</button>
+          <button class="btn btn-sm btn-primary" id="catDialogConfirm">Agregar</button>
+        </div>
       </div>
     </div>
-    <div class="toolbar">
-      <button class="ghost" id="btnExport">⬇ Exportar</button>
-      <button class="ghost" id="btnImport">⬆ Importar</button>
-      <input type="file" id="fileImport" accept="application/json" class="hidden">
+
+    <!-- GENERIC MODAL -->
+    <div id="modalOverlay" class="cat-dialog-overlay hidden" role="dialog" aria-modal="true"
+      aria-labelledby="modalTitle">
+      <div class="cat-dialog-box">
+        <div class="cat-dialog-ttl" id="modalTitle"></div>
+        <div id="modalMsg" style="font-size:13.5px;color:var(--ink-2);line-height:1.55;margin-bottom:20px;"></div>
+        <div class="cat-dialog-footer">
+          <button class="btn btn-ghost btn-sm" id="modalCancel">Cancelar</button>
+          <button class="btn btn-sm btn-primary" id="modalConfirm">Aceptar</button>
+        </div>
+      </div>
     </div>
-  </header>
-  <div class="tabs" id="tabs"></div>
-  <div id="panel"></div>
-  <footer>
-    Las notas se calculan y muestran con un decimal · tus ramos se guardan automáticamente en este navegador.<br>
-    Usa “Exportar” para respaldarlos y no perderlos si cambias de equipo.
-  </footer>
-</div>
 
-<script>
-"use strict";
+    <footer>Escala 1.0 – 7.0 · Datos guardados automáticamente en este navegador · Exportar para respaldarlos</footer>
+  </div>
 
-/* ---------------- almacenamiento ---------------- */
-const KEY="calc_ponderaciones_v1";
-const Store={
-  async load(){
-    try{ if(window.storage){ const r=await window.storage.get(KEY); return r?JSON.parse(r.value):null; } }catch(e){}
-    try{ const v=localStorage.getItem(KEY); return v?JSON.parse(v):null; }catch(e){}
-    return null;
-  },
-  async save(state){
-    const s=JSON.stringify(state);
-    try{ if(window.storage){ await window.storage.set(KEY,s); return; } }catch(e){}
-    try{ localStorage.setItem(KEY,s); }catch(e){}
-  }
-};
-let saveTimer=null;
-function persist(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>Store.save(state),250); }
+  <script>
+    "use strict";
 
-/* ---------------- estado ---------------- */
-const DEFAULT_CATS=["Prueba","Control","Tarea","Proyecto","Laboratorio","Otro"];
-let state={courses:[],active:null,categories:[...DEFAULT_CATS],ui:{config:false,exem:false}};
-function ensureUI(){ if(!state.ui) state.ui={config:false,exem:false}; }
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+    /* ── Iconos SVG ── */
+    function ic(name, sz) {
+      sz = sz || 15;
+      const d = {
+        moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+        sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+        list: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+        sliders: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+        shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
+        target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+        barchart: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+        plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+        x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+        cap: '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+        check: '<polyline points="20 6 9 17 4 12"/>',
+        grip: '<polyline points="8 9 12 5 16 9" stroke-width="2" fill="none"/><polyline points="8 15 12 19 16 15" stroke-width="2" fill="none"/>',
+      };
+      return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:inline-block;vertical-align:middle">${d[name] || ''}</svg>`;
+    }
 
-function newCourse(name){
-  return {id:uid(),name:name||"Nuevo ramo",pass:4.0,npWeight:60,examWeight:40,
-    weightMode:"eval",catWeights:{},decimals:1,evals:[],exemption:{enabled:true,rules:[{conds:[]}]}};
-}
-function demoCourse(){
-  const c=newCourse("Ramo de ejemplo");
-  c.evals=[
-    {id:uid(),name:"Prueba 1",cat:"Prueba",weight:25,grade:""},
-    {id:uid(),name:"Prueba 2",cat:"Prueba",weight:25,grade:""},
-    {id:uid(),name:"Prueba 3",cat:"Prueba",weight:25,grade:""},
-    {id:uid(),name:"Controles",cat:"Control",weight:10,grade:""},
-    {id:uid(),name:"Proyecto",cat:"Proyecto",weight:15,grade:""}
-  ];
-  c.exemption={enabled:true,rules:[
-    {conds:[{type:"catAvg",cat:"Prueba",op:">=",val:4.5}]},
-    {conds:[{type:"minAll",op:">=",val:4.0}]}
-  ]};
-  return c;
-}
-function ensureFields(c){ if(!c.weightMode) c.weightMode="eval"; if(!c.catWeights) c.catWeights={}; if(!c.decimals) c.decimals=1; }
+    function statusDot(state) {
+      if (state === 'ok') return `<span class="status-dot ok">${ic('check', 11)}</span>`;
+      if (state === 'no') return `<span class="status-dot no">${ic('x', 11)}</span>`;
+      return `<span class="status-dot pend">·</span>`;
+    }
 
-/* ---------------- utilidades ---------------- */
-let DEC=1;
-const r1=x=>Math.round((x+1e-9)*10)/10;
-const rN=(x,d)=>Math.round((x+1e-9)*Math.pow(10,d))/Math.pow(10,d);
-const r2=x=>Math.round((x+1e-9)*100)/100;
-const num=v=>{ const n=parseFloat(v); return isFinite(n)?n:null; };
-function fmt(x){ return x==null?"—":rN(x,DEC).toFixed(DEC); }
-function fmtW(x){ const r=r1(x); return (Math.round(r)===r?r.toFixed(0):r.toFixed(1)); }
-function mergedCats(course){ const set=[...state.categories]; course.evals.forEach(e=>{ if(e.cat&&!set.includes(e.cat)) set.push(e.cat); }); return set; }
-function usedCats(c){ const seen=[]; c.evals.forEach(e=>{ if(e.cat&&!seen.includes(e.cat)) seen.push(e.cat); }); return seen; }
-function catOptions(selected,course){
-  return mergedCats(course).map(x=>`<option ${x===selected?'selected':''}>${escapeHtml(x)}</option>`).join('')
-       + `<option value="__add__">➕ Agregar categoría…</option>`;
-}
-
-/* peso efectivo de cada evaluación según el modo */
-function effWeights(c){
-  const map={};
-  if(c.weightMode==='category'){
-    const byCat={}; c.evals.forEach(ev=>{ (byCat[ev.cat]=byCat[ev.cat]||[]).push(ev); });
-    Object.keys(byCat).forEach(cat=>{
-      const total=num((c.catWeights||{})[cat])||0;
-      const members=byCat[cat];
-      let sum=0; members.forEach(ev=>{ sum+=(num(ev.share)||1); });
-      members.forEach(ev=>{ map[ev.id]= sum>0 ? total*((num(ev.share)||1)/sum) : 0; });
-    });
-  } else {
-    c.evals.forEach(ev=>{ map[ev.id]=num(ev.weight)||0; });
-  }
-  return map;
-}
-
-/* ---------------- cálculos ---------------- */
-function calc(c){
-  const ew=effWeights(c);
-  let totalW=0,gradedW=0,gradedSum=0; const graded=[],pending=[];
-  c.evals.forEach(ev=>{
-    const w=ew[ev.id]||0; totalW+=w; const g=num(ev.grade);
-    if(g!=null){ gradedW+=w; gradedSum+=(w/100)*g; graded.push({ev,w,g}); }
-    else if(w>0){ pending.push({ev,w}); }
-  });
-  const pendingW=totalW-gradedW;
-  const avgGraded=gradedW>0?gradedSum/(gradedW/100):null;
-  const npFloor=gradedSum;
-  const allGraded=pending.length===0 && c.evals.length>0;
-  const npEst=c.evals.length===0?null:(allGraded?npFloor:avgGraded);
-  return {ew,totalW,gradedW,pendingW,gradedSum,avgGraded,npFloor,npEst,allGraded,graded,pending};
-}
-function catAverage(c,cat,ew){
-  let w=0,s=0,anyPending=false,count=0;
-  c.evals.forEach(ev=>{
-    if(ev.cat!==cat) return; count++;
-    const g=num(ev.grade), wt=(ew?ew[ev.id]:num(ev.weight))||0;
-    if(g==null) anyPending=true; else { w+=wt; s+=wt*g; }
-  });
-  if(count===0) return {avg:null,empty:true,anyPending};
-  return {avg:w>0?s/w:null,empty:false,anyPending};
-}
-function evalCond(c,cd,k){
-  /* Opción B: compara con el valor REAL sin redondear */
-  const val=num(cd.val); if(val==null) return {state:'pend',text:'condición incompleta'};
-  const V=val;
-  if(cd.type==='np'){ const np=k.npEst; if(np==null) return {state:'pend',text:'sin notas'};
-    const ok=np>=V; return {state:k.allGraded?(ok?'ok':'no'):'pend',text:`NP ${fmt(np)} ≥ ${fmt(val)}`}; }
-  if(cd.type==='minAll'){ if(k.graded.length===0) return {state:'pend',text:'sin notas'};
-    const min=Math.min(...k.graded.map(x=>x.g)), ok=min>=V;
-    if(k.pending.length>0) return {state:ok?'pend':'no',text:`mín. actual ${fmt(min)} (faltan notas)`};
-    return {state:ok?'ok':'no',text:`mín. ${fmt(min)} ≥ ${fmt(val)}`}; }
-  if(cd.type==='catAvg'){ const ca=catAverage(c,cd.cat,k.ew);
-    if(ca.empty) return {state:'pend',text:`sin “${cd.cat}”`};
-    if(ca.avg==null) return {state:'pend',text:`sin notas en ${cd.cat}`};
-    const ok=ca.avg>=V;
-    if(ca.anyPending) return {state:ok?'pend':'no',text:`prom. ${cd.cat} ${fmt(ca.avg)} (faltan)`};
-    return {state:ok?'ok':'no',text:`prom. ${cd.cat} ${fmt(ca.avg)} ≥ ${fmt(val)}`}; }
-  if(cd.type==='eval'){ const ev=c.evals.find(e=>e.id===cd.evalId);
-    if(!ev) return {state:'pend',text:'evaluación no encontrada'};
-    const g=num(ev.grade); if(g==null) return {state:'pend',text:`${ev.name}: sin nota`};
-    return {state:g>=V?'ok':'no',text:`${ev.name} ${fmt(g)} ≥ ${fmt(val)}`}; }
-  return {state:'pend',text:'—'};
-}
-function exemptionStatus(c,k){
-  if(!c.exemption.enabled || c.exemption.rules.every(r=>r.conds.length===0)) return {overall:'off',groups:[]};
-  let anyOk=false,anyPend=false;
-  const groups=c.exemption.rules.map(rule=>{
-    if(rule.conds.length===0) return {state:'empty',conds:[]};
-    const cs=rule.conds.map(cd=>({cd,res:evalCond(c,cd,k)}));
-    let g='ok'; if(cs.some(x=>x.res.state==='no')) g='no'; else if(cs.some(x=>x.res.state==='pend')) g='pend';
-    if(g==='ok') anyOk=true; if(g==='pend') anyPend=true; return {state:g,conds:cs};
-  });
-  return {overall:anyOk?'ok':(anyPend?'pend':'no'),groups};
-}
-
-/* ---------------- render ---------------- */
-function activeCourse(){ return state.courses.find(c=>c.id===state.active); }
-function renderTabs(){
-  const t=document.getElementById('tabs'); t.innerHTML='';
-  state.courses.forEach(c=>{
-    const el=document.createElement('div');
-    el.className='tab'+(c.id===state.active?' active':'');
-    el.innerHTML=`<span class="nm">${escapeHtml(c.name||'Ramo')}</span><span class="x" title="Eliminar ramo">×</span>`;
-    el.querySelector('.nm').onclick=()=>{ state.active=c.id; persist(); render(); };
-    el.querySelector('.x').onclick=(e)=>{ e.stopPropagation(); deleteCourse(c.id); };
-    t.appendChild(el);
-  });
-  const add=document.createElement('div'); add.className='tab add'; add.textContent='+ Agregar ramo';
-  add.onclick=()=>{ const c=newCourse(); state.courses.push(c); state.active=c.id; persist(); render(); };
-  t.appendChild(add);
-}
-function render(){
-  renderTabs();
-  const panel=document.getElementById('panel'); const c=activeCourse();
-  if(!c){ panel.innerHTML='<div class="card muted">No hay ramos. Agrega uno con “+ Agregar ramo”.</div>'; return; }
-  ensureFields(c); DEC=+c.decimals||1;
-  panel.innerHTML=`
-    <div class="namebar">
-      <label class="namelabel" for="cName">Nombre del ramo</label>
-      <input class="coursename" id="cName" value="${escapeAttr(c.name)}" placeholder="Escribe el nombre del ramo">
+    /* ── Grade Hero ── */
+    function gradeHero(k, pass) {
+      const grade = k.avgGraded;
+      const gc = gClass(grade, pass);
+      // Bar: % of course weight already evaluated (gradedW/totalW)
+      const pctEval = k.totalW > 0 ? Math.min(100, Math.max(0, (k.gradedW / k.totalW) * 100)) : 0;
+      const coverW = (100 - pctEval).toFixed(2);
+      const pend = k.pending.length;
+      const rendPct = Math.round(pctEval);
+      return `
+  <div class="grade-hero" data-gc="${gc}">
+    <div class="gh-top">
+      <div class="gh-grade ${gc}">${fmt(grade)}</div>
+      <div class="gh-grade-info">
+        <span class="gh-label">Promedio actual</span>
+        <span class="gh-sub">${fmtW(k.gradedW)}% del ramo evaluado · ${pend} pendiente${pend !== 1 ? 's' : ''}</span>
+      </div>
     </div>
-    <div class="grid">
-      <div class="col">${evalsCard(c)}${settingsCard(c)}${exemptionCard(c)}</div>
-      <div class="col"><div id="results" class="o2">${resultsCard(c)}</div><div id="calcs" class="o3">${calcsCard(c)}</div></div>
-    </div>`;
-  const nm=document.getElementById('cName');
-  nm.oninput=()=>{ c.name=nm.value; renderTabs(); persist(); };
-  bindEvals(c); bindSettings(c); bindExemption(c); bindCalcs(c); bindCollapsibles();
-}
+    <div class="gh-bar-track" title="${rendPct}% del ramo rendido">
+      <div class="gh-bar-cover" style="width:${coverW}%"></div>
+    </div>
+    <div class="gh-bar-footer">
+      <span class="gh-bar-scale">0%</span>
+      <span class="gh-meta">${rendPct}% del ramo rendido</span>
+      <span class="gh-bar-scale">100%</span>
+    </div>
+  </div>`;
+    }
 
-function evalsCard(c){
-  const ew=effWeights(c);
-  const isCat=c.weightMode==='category';
-  const rows=c.evals.map((ev,i)=>`
-    <tr data-i="${i}">
-      <td class="ev-name"><input data-f="name" value="${escapeAttr(ev.name)}" placeholder="Nombre"></td>
-      <td><select data-f="cat">${catOptions(ev.cat,c)}</select></td>
-      <td>${ isCat
-              ? `<div class="relcell"><input class="num rel" data-f="share" inputmode="decimal" value="${ev.share??''}" placeholder="1" title="Peso relativo dentro de la categoría (vacío = 1)"><span class="autow" data-evid="${ev.id}">${fmtW(ew[ev.id]||0)}%</span></div>`
-              : `<input class="num" data-f="weight" inputmode="decimal" value="${ev.weight??''}" placeholder="%">` }</td>
-      <td><input class="num" data-f="grade" inputmode="decimal" value="${ev.grade??''}" placeholder="—"></td>
-      <td><button class="tiny ghost danger" data-del="${i}" title="Quitar">✕</button></td>
+    /* ── Storage ── */
+    const KEY = 'gradecalc_v2';
+    const Store = {
+      async load() {
+        try { if (window.storage) { const r = await window.storage.get(KEY); return r ? JSON.parse(r.value) : null; } } catch (e) { }
+        try { const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; } catch (e) { }
+        return null;
+      },
+      async save(s) {
+        const j = JSON.stringify(s);
+        try { if (window.storage) { await window.storage.set(KEY, j); return; } } catch (e) { }
+        try { localStorage.setItem(KEY, j); } catch (e) { }
+      }
+    };
+    let saveTimer = null;
+    function persist() { clearTimeout(saveTimer); saveTimer = setTimeout(() => Store.save(state), 250); }
+
+    /* ── Estado ── */
+    const DEFAULT_CATS = ['Prueba', 'Control', 'Tarea', 'Proyecto', 'Laboratorio', 'Otro'];
+    let state = { courses: [], active: null, categories: [...DEFAULT_CATS], ui: { config: false, exem: false }, theme: 'dark' };
+
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+    function newCourse(name) {
+      return {
+        id: uid(), name: name || 'Nuevo ramo', pass: 4.0,
+        hasExam: true, npWeight: 60, examWeight: 40, examGrade: null,
+        weightMode: 'eval', catWeights: {}, decimals: 1,
+        evals: [], exemption: { enabled: true, rules: [{ conds: [] }] }
+      };
+    }
+    function demoCourse() {
+      const c = newCourse('Cálculo I');
+      c.evals = [
+        { id: uid(), name: 'Prueba 1', cat: 'Prueba', weight: 25, grade: '5.5' },
+        { id: uid(), name: 'Prueba 2', cat: 'Prueba', weight: 25, grade: '' },
+        { id: uid(), name: 'Prueba 3', cat: 'Prueba', weight: 25, grade: '' },
+        { id: uid(), name: 'Controles', cat: 'Control', weight: 10, grade: '6.2' },
+        { id: uid(), name: 'Proyecto', cat: 'Proyecto', weight: 15, grade: '' },
+      ];
+      c.exemption = {
+        enabled: true, rules: [
+          { conds: [{ type: 'catAvg', cat: 'Prueba', op: '>=', val: '4.5' }] },
+          { conds: [{ type: 'minAll', op: '>=', val: '4.0' }] },
+        ]
+      };
+      return c;
+    }
+    function ensureFields(c) {
+      if (!c.weightMode) c.weightMode = 'eval';
+      if (!c.catWeights) c.catWeights = {};
+      if (c.decimals == null) c.decimals = 1;
+      if (!c.pass) c.pass = 4.0;
+      if (!c.exemption) c.exemption = { enabled: false, rules: [{ conds: [] }] };
+      if (c.examGrade === undefined) c.examGrade = null;
+      if (c.hasExam === undefined) c.hasExam = true;
+    }
+    function ensureUI() { if (!state.ui) state.ui = { config: false, exem: false }; }
+
+    /* ── Utils ── */
+    let DEC = 1;
+    const rN = (x, d) => Math.round((x + 1e-9) * Math.pow(10, d)) / Math.pow(10, d);
+    const r1 = x => Math.round((x + 1e-9) * 10) / 10;
+    const r2 = x => Math.round((x + 1e-9) * 100) / 100;
+    const num = v => { const n = parseFloat(v); return isFinite(n) ? n : null; };
+    function fmt(x) { return x == null ? '—' : rN(x, DEC).toFixed(DEC); }
+    function fmtD(x, d) { return x == null ? '—' : rN(x, d).toFixed(d); }
+    function fmtW(x) { const r = r1(x); return Math.round(r) === r ? r.toFixed(0) : r.toFixed(1); }
+    function passOf(c) { return num(c.pass) ?? 4.0; }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m])); }
+    function escA(s) { return esc(s).replace(/'/g, '&#39;'); }
+    function mergedCats(c) { const s = [...state.categories]; c.evals.forEach(e => { if (e.cat && !s.includes(e.cat)) s.push(e.cat); }); return s; }
+    function usedCats(c) { const s = []; c.evals.forEach(e => { if (e.cat && !s.includes(e.cat)) s.push(e.cat); }); return s; }
+    function catOpts(sel, c) { return mergedCats(c).map(x => `<option ${x === sel ? 'selected' : ''}>${esc(x)}</option>`).join('') + `<option value="__add__">+ Nueva categoría…</option>`; }
+
+    /* ── Pesos ── */
+    function effWeights(c) {
+      const map = {};
+      if (c.weightMode === 'category') {
+        const byCat = {};
+        c.evals.forEach(ev => { (byCat[ev.cat] = byCat[ev.cat] || []).push(ev); });
+        Object.keys(byCat).forEach(cat => {
+          const total = num((c.catWeights || {})[cat]) || 0, members = byCat[cat];
+          let sum = 0; members.forEach(ev => { sum += (num(ev.share) || 1); });
+          members.forEach(ev => { map[ev.id] = sum > 0 ? total * ((num(ev.share) || 1) / sum) : 0; });
+        });
+      } else { c.evals.forEach(ev => { map[ev.id] = num(ev.weight) || 0; }); }
+      return map;
+    }
+
+    /* ── Cálculos ── */
+    function calc(c) {
+      const ew = effWeights(c);
+      let totalW = 0, gradedW = 0, gradedSum = 0;
+      const graded = [], pending = [];
+      c.evals.forEach(ev => {
+        const w = ew[ev.id] || 0; totalW += w;
+        const g = num(ev.grade);
+        if (g != null) { gradedW += w; gradedSum += (w / 100) * g; graded.push({ ev, w, g }); }
+        else if (w > 0) { pending.push({ ev, w }); }
+      });
+      const avgGraded = gradedW > 0 ? gradedSum / (gradedW / 100) : null;
+      const allGraded = pending.length === 0 && c.evals.length > 0;
+      const npEst = c.evals.length === 0 ? null : (allGraded ? gradedSum : avgGraded);
+      return { ew, totalW, gradedW, pendingW: totalW - gradedW, gradedSum, avgGraded, allGraded, npEst, graded, pending };
+    }
+    function catAverage(c, cat, ew) {
+      let w = 0, s = 0, anyPending = false, count = 0;
+      c.evals.forEach(ev => {
+        if (ev.cat !== cat) return; count++;
+        const g = num(ev.grade), wt = (ew ? ew[ev.id] : num(ev.weight)) || 0;
+        if (g == null) anyPending = true; else { w += wt; s += wt * g; }
+      });
+      if (count === 0) return { avg: null, empty: true, anyPending };
+      return { avg: w > 0 ? s / w : null, empty: false, anyPending };
+    }
+    function evalCond(c, cd, k) {
+      const val = num(cd.val);
+      if (val == null) return { state: 'pend', text: 'Sin configurar', label: 'Condición incompleta', sub: 'Ingresa un valor mínimo requerido' };
+      const r = n => Math.round(n * 10) / 10;
+      if (cd.type === 'np') {
+        const np = k.npEst;
+        if (np == null) return { state: 'pend', text: 'NP: sin notas', label: 'Nota de Presentación (NP)', sub: 'Sin evaluaciones ingresadas aún' };
+        const ok = r(np) >= r(val);
+        const st = k.allGraded ? (ok ? 'ok' : 'no') : 'pend';
+        return {
+          state: st, text: `NP: ${fmt(np)} ≥ ${fmt(val)}`, label: 'Nota de Presentación (NP)',
+          sub: `Actual: ${fmt(np)} — Requiere: ≥ ${fmt(val)}${!k.allGraded ? ' — faltan evaluaciones' : ''}`
+        };
+      }
+      if (cd.type === 'minAll') {
+        if (k.graded.length === 0) return { state: 'pend', text: 'Mínima: sin notas', label: 'Mínima en todas las evaluaciones', sub: 'Sin notas ingresadas aún' };
+        const min = Math.min(...k.graded.map(x => x.g)), ok = r(min) >= r(val);
+        const pend = k.pending.length > 0;
+        return {
+          state: pend ? (ok ? 'pend' : 'no') : (ok ? 'ok' : 'no'),
+          text: `Mínima: ${fmt(min)} ≥ ${fmt(val)}`, label: 'Mínima en todas las evaluaciones',
+          sub: `Nota más baja: ${fmt(min)} — Requiere: ≥ ${fmt(val)}${pend ? ' — faltan evaluaciones' : ''}`
+        };
+      }
+      if (cd.type === 'catAvg') {
+        const ca = catAverage(c, cd.cat, k.ew);
+        if (ca.empty) return { state: 'pend', text: `Prom. ${cd.cat}: sin eval.`, label: `Promedio de ${cd.cat}`, sub: 'Sin evaluaciones de esta categoría' };
+        if (ca.avg == null) return { state: 'pend', text: `Prom. ${cd.cat}: sin notas`, label: `Promedio de ${cd.cat}`, sub: 'Sin notas ingresadas en esta categoría' };
+        const ok = r(ca.avg) >= r(val);
+        return {
+          state: ca.anyPending ? (ok ? 'pend' : 'no') : (ok ? 'ok' : 'no'),
+          text: `Prom. ${cd.cat}: ${fmt(ca.avg)} ≥ ${fmt(val)}`, label: `Promedio de ${cd.cat}`,
+          sub: `Promedio actual: ${fmt(ca.avg)} — Requiere: ≥ ${fmt(val)}${ca.anyPending ? ' — faltan evaluaciones' : ''}`
+        };
+      }
+      if (cd.type === 'eval') {
+        const ev = c.evals.find(e => e.id === cd.evalId);
+        if (!ev) return { state: 'pend', text: 'Evaluación no encontrada', label: 'Evaluación específica', sub: 'La evaluación ya no existe' };
+        const g = num(ev.grade);
+        if (g == null) return { state: 'pend', text: `${ev.name}: sin nota`, label: ev.name, sub: 'Sin nota ingresada' };
+        return {
+          state: r(g) >= r(val) ? 'ok' : 'no', text: `${ev.name}: ${fmt(g)} ≥ ${fmt(val)}`, label: ev.name,
+          sub: `Nota obtenida: ${fmt(g)} — Requiere: ≥ ${fmt(val)}`
+        };
+      }
+      return { state: 'pend', text: '—', label: '—', sub: '' };
+    }
+    function exemStatus(c, k) {
+      if (!c.exemption.enabled || c.exemption.rules.every(r => r.conds.length === 0)) return { overall: 'off', groups: [] };
+      let anyOk = false, anyPend = false;
+      const groups = c.exemption.rules.map(rule => {
+        if (rule.conds.length === 0) return { state: 'empty', conds: [] };
+        const cs = rule.conds.map(cd => ({ cd, res: evalCond(c, cd, k) }));
+        let g = 'ok';
+        if (cs.some(x => x.res.state === 'no')) g = 'no';
+        else if (cs.some(x => x.res.state === 'pend')) g = 'pend';
+        if (g === 'ok') anyOk = true; if (g === 'pend') anyPend = true;
+        return { state: g, conds: cs };
+      });
+      return { overall: anyOk ? 'ok' : (anyPend ? 'pend' : 'no'), groups };
+    }
+
+    /* ── Tema ── */
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.style.colorScheme = t;
+      const btn = document.getElementById('btnTheme');
+      if (btn) btn.innerHTML = t === 'dark' ? ic('sun', 15) : ic('moon', 15);
+    }
+
+    /* ── Helpers ── */
+    function activeCourse() { return state.courses.find(c => c.id === state.active); }
+    function gClass(g, pass) {
+      if (g == null) return 'nd';
+      const r = n => Math.round(n * 10) / 10;
+      if (r(g) === r(pass)) return 'warn';
+      return r(g) > r(pass) ? 'ok' : 'no';
+    }
+    function colorizeGrade(input, pass) {
+      const v = num(input.value);
+      input.classList.remove('g-ok', 'g-warn', 'g-no', 'g-inv');
+      if (!input.value.trim()) return;
+      if (v == null) { input.classList.add('g-inv'); return; }
+      const cl = gClass(v, pass);
+      input.classList.add(cl === 'ok' ? 'g-ok' : cl === 'warn' ? 'g-warn' : 'g-no');
+    }
+    function wSumChip(c) {
+      const sum = c.evals.reduce((a, e) => a + (num(e.weight) || 0), 0);
+      return Math.abs(r1(sum) - 100) < 0.05
+        ? `<span class="chip ok">✓ ${fmtW(sum)}%</span>`
+        : `<span class="chip warn">⚠ ${fmtW(sum)}% · debe ser 100</span>`;
+    }
+    function cwSumChip(c) {
+      const sum = usedCats(c).reduce((a, cat) => a + (num(c.catWeights[cat]) || 0), 0);
+      return Math.abs(r1(sum) - 100) < 0.05
+        ? `<span class="chip ok">✓ ${fmtW(sum)}%</span>`
+        : `<span class="chip warn">⚠ ${fmtW(sum)}% · debe ser 100</span>`;
+    }
+    function condChip(res) {
+      return res.state === 'ok' ? `<span class="chip ok">${ic('check', 10)} cumple</span>`
+        : res.state === 'no' ? '<span class="chip no">no cumple</span>'
+          : '<span class="chip neu">pendiente</span>';
+    }
+
+    /* ── Custom dialog para categorías ── */
+    let catDialogCb = null;
+    function showCatDialog(cb) {
+      catDialogCb = cb;
+      const inp = document.getElementById('catDialogInput');
+      inp.value = '';
+      document.getElementById('catDialogOverlay').classList.remove('hidden');
+      setTimeout(() => inp.focus(), 50);
+    }
+    function closeCatDialog(name) {
+      document.getElementById('catDialogOverlay').classList.add('hidden');
+      if (catDialogCb) { catDialogCb(name); catDialogCb = null; }
+    }
+    function initCatDialog() {
+      document.getElementById('catDialogConfirm').onclick = () => {
+        const n = document.getElementById('catDialogInput').value.trim();
+        if (!n) { document.getElementById('catDialogInput').focus(); return; }
+        if (!state.categories.includes(n)) state.categories.push(n);
+        closeCatDialog(n);
+      };
+      document.getElementById('catDialogCancel').onclick = () => closeCatDialog(null);
+      document.getElementById('catDialogInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('catDialogConfirm').click();
+        if (e.key === 'Escape') closeCatDialog(null);
+      });
+      document.getElementById('catDialogOverlay').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeCatDialog(null);
+      });
+    }
+
+    /* ── Tabs ── */
+    function renderTabs() {
+      const bar = document.getElementById('tabsBar');
+      bar.innerHTML = '';
+      state.courses.forEach(c => {
+        const k = calc(c), pass = passOf(c);
+        const g = k.npEst, gc = gClass(g, pass);
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn' + (c.id === state.active ? ' active' : '');
+        btn.innerHTML = `<span>${esc(c.name || 'Ramo')}</span><span class="tab-grade ${g != null ? gc : ''}">${g != null ? fmtD(g, +c.decimals || 1) : '·'}</span><span class="tab-x" title="Eliminar">${ic('x', 11)}</span>`;
+        btn.onclick = e => { if (!e.target.closest('.tab-x')) { state.active = c.id; persist(); render(); } };
+        btn.querySelector('.tab-x').onclick = e => { e.stopPropagation(); deleteCourse(c.id); };
+        bar.appendChild(btn);
+      });
+      const add = document.createElement('button');
+      add.className = 'tab-add';
+      add.innerHTML = `${ic('plus', 11)} Ramo`;
+      add.onclick = () => { const c = newCourse(); state.courses.push(c); state.active = c.id; persist(); render(); };
+      bar.appendChild(add);
+    }
+
+    /* ── Evaluaciones ── */
+    function evalsCard(c) {
+      const ew = effWeights(c), isCat = c.weightMode === 'category';
+      const rows = c.evals.map((ev, i) => `
+    <tr data-i="${i}" draggable="true">
+      <td class="ev-grip">${ic('grip', 14)}</td>
+      <td class="ev-name"><input data-f="name" value="${escA(ev.name)}" placeholder="Nombre"></td>
+      <td><select data-f="cat" style="width:auto;min-width:84px">${catOpts(ev.cat, c)}</select></td>
+      <td>${isCat
+          ? `<div class="relcell"><input class="num-inp rel-inp" data-f="share" inputmode="decimal" value="${ev.share ?? ''}" placeholder="1"><span class="autow" data-evid="${ev.id}">${fmtW(ew[ev.id] || 0)}%</span></div>`
+          : `<input class="num-inp" data-f="weight" inputmode="decimal" value="${ev.weight ?? ''}" placeholder="%">`}</td>
+      <td class="ev-nota"><input class="num-inp" data-f="grade" inputmode="decimal" value="${ev.grade ?? ''}" placeholder="—"></td>
+      <td><button class="btn btn-sm btn-ghost btn-danger" data-del="${i}">${ic('x', 12)}</button></td>
     </tr>`).join('');
-  const footer = isCat
-    ? `<button class="tiny" id="addEv">+ Agregar evaluación</button>`
-    : `${weightSumChip(c)} &nbsp; <button class="tiny" id="addEv">+ Agregar evaluación</button>`;
-  return `
-  <div class="card o1">
-    <h2><span class="ic">📋</span>Evaluaciones <span class="hint">deja la nota vacía si aún no la rindes</span></h2>
+      const foot = isCat ? '' : `&nbsp;&nbsp;${wSumChip(c)}`;
+      return `
+  <div class="block">
+    <div class="block-title"><span class="block-title-icon">${ic('list', 12)}</span> Evaluaciones</div>
     <div class="seg">
-      <button class="segbtn ${isCat?'':'on'}" data-mode="eval">Por evaluación</button>
-      <button class="segbtn ${isCat?'on':''}" data-mode="category">Por categoría</button>
+      <button class="seg-btn ${isCat ? '' : 'on'}" data-mode="eval">Por evaluación</button>
+      <button class="seg-btn ${isCat ? 'on' : ''}" data-mode="category">Por categoría</button>
     </div>
-    <div class="modehint">${ isCat
-        ? 'Defines el peso de cada categoría y se reparte entre sus evaluaciones. El número “relativo” deja que unas pesen más que otras dentro de la categoría (vacío o 1 = iguales).'
-        : 'Cada evaluación lleva su propio peso %.' }</div>
-    ${ isCat ? catPanel(c) : '' }
+    <p class="modehint">${isCat
+          ? 'Asigna un % a cada categoría; se reparte entre sus evaluaciones.'
+          : 'Cada evaluación lleva su propio porcentaje.'}</p>
+    ${isCat ? catPanel(c) : ''}
     <table>
-      <thead><tr><th>Evaluación</th><th>Categoría</th><th>${isCat?'Relativo · %':'Peso %'}</th><th>Nota</th><th></th></tr></thead>
-      <tbody id="evBody">${rows || `<tr><td colspan="5" class="muted small">Sin evaluaciones todavía.</td></tr>`}</tbody>
-      <tfoot><tr><td colspan="5">${footer}</td></tr></tfoot>
+      <thead><tr><th></th><th>Evaluación</th><th>Categoría</th><th>${isCat ? 'Rel · %' : 'Ponderación %'}</th><th class="ev-nota">Nota</th><th></th></tr></thead>
+      <tbody id="evBody">${rows || `<tr><td colspan="6" class="muted small" style="padding:12px 0">Sin evaluaciones. Agrega la primera.</td></tr>`}</tbody>
+      <tfoot><tr><td colspan="6"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-sm" id="addEv">${ic('plus', 12)} Agregar evaluación</button>${foot}<span class="ev-empty-hint">nota vacía → aún no rendida</span></div></td></tr></tfoot>
     </table>
   </div>`;
-}
-function catPanel(c){
-  const cats=usedCats(c);
-  const rows=cats.map(cat=>{
-    const count=c.evals.filter(e=>e.cat===cat).length;
-    return `<div class="catrow">
-      <span class="cn">${escapeHtml(cat)}</span>
-      <input class="num" data-cw="${escapeAttr(cat)}" inputmode="decimal" value="${(c.catWeights[cat]??'')}" placeholder="%">
-      <span class="ce">${count} eval.</span>
+    }
+    function catPanel(c) {
+      const cats = usedCats(c);
+      const rows = cats.map(cat => {
+        const count = c.evals.filter(e => e.cat === cat).length;
+        return `<div class="cat-row">
+      <span class="cn">${esc(cat)}</span>
+      <input class="num-inp" data-cw="${escA(cat)}" inputmode="decimal" value="${c.catWeights[cat] ?? ''}" placeholder="%">
+      <span class="cc">${count} eval.</span>
     </div>`;
-  }).join('') || '<div class="small muted">Agrega evaluaciones para asignar pesos por categoría.</div>';
-  return `<div class="catpanel">
-    <div class="cpt">Peso de cada categoría (debe sumar 100%)</div>
-    ${rows}
-    <div id="catSum">${catWeightSumChip(c)}</div>
+      }).join('') || '<p class="small muted">Agrega evaluaciones para asignar pesos por categoría.</p>';
+      return `<div class="cat-panel">
+    <div class="cat-panel-t">Peso de cada categoría (debe sumar 100%)</div>
+    ${rows}<div id="catSum">${cwSumChip(c)}</div>
   </div>`;
-}
-function weightSumChip(c){
-  const sum=c.evals.reduce((a,e)=>a+(num(e.weight)||0),0);
-  return Math.abs(r1(sum)-100)<0.05?`<span class="chip ok">✓ suma ${fmtW(sum)}%</span>`:`<span class="chip warn">suma ${fmtW(sum)}% · debería ser 100</span>`;
-}
-function catWeightSumChip(c){
-  const sum=usedCats(c).reduce((a,cat)=>a+(num(c.catWeights[cat])||0),0);
-  return Math.abs(r1(sum)-100)<0.05?`<span class="chip ok">✓ suma ${fmtW(sum)}%</span>`:`<span class="chip warn">suma ${fmtW(sum)}% · debería ser 100</span>`;
-}
+    }
 
-function configSummary(c){
-  const pass=(num(c.pass)??4.0).toFixed(1), np=r1(num(c.npWeight)||0), ex=r1(num(c.examWeight)||0), d=+c.decimals||1;
-  return `Aprob. ${pass} · NP ${np} / Ex ${ex} · ${d} dec.`;
-}
-function settingsCard(c){
-  const open=!!(state.ui&&state.ui.config);
-  const body=`
-    <div class="row">
-      <div class="field" style="flex:1"><label>Nota de aprobación</label><input id="sPass" class="num" inputmode="decimal" value="${c.pass}"></div>
-      <div class="field" style="flex:1"><label>Peso NP en la final (%)</label><input id="sNp" class="num" inputmode="decimal" value="${c.npWeight}"></div>
-      <div class="field" style="flex:1"><label>Peso examen en la final (%)</label><input id="sEx" class="num" inputmode="decimal" value="${c.examWeight}"></div>
-    </div>
-    <div class="row" style="align-items:flex-end">
-      <div class="field" style="flex:1"><label>Decimales a mostrar</label>
-        <select id="sDec"><option value="1" ${(+c.decimals||1)===1?'selected':''}>1 decimal (4.5)</option><option value="2" ${(+c.decimals||1)===2?'selected':''}>2 decimales (4.47)</option></select>
+    /* ── Configuración ── */
+    function cfgSum(c) {
+      const pass = passOf(c).toFixed(1);
+      if (!c.hasExam) return `Aprob. ${pass} · Sin examen`;
+      const np = r1(num(c.npWeight) || 0), ex = r1(num(c.examWeight) || 0);
+      return `Aprob. ${pass} · NP ${np}% / Ex ${ex}%`;
+    }
+    function settingsCard(c) {
+      const open = !!(state.ui && state.ui.config);
+      const hasExam = c.hasExam !== false;
+      const fmlText = hasExam
+        ? `NF = ${((num(c.npWeight) || 0) / 100).toFixed(2)}·NP + ${((num(c.examWeight) || 0) / 100).toFixed(2)}·E`
+        : 'NF = NP (sin examen)';
+      return `
+  <div class="block coll ${open ? 'open' : ''}">
+    <button class="c-head" data-toggle="config">
+      <span class="c-icon">${ic('sliders', 12)}</span><span>Configuración del ramo</span>
+      <span class="c-sum">${esc(cfgSum(c))}</span>
+      <span class="c-chev">▾</span>
+    </button>
+    <div class="c-body"><div class="c-in">
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;font-size:13px;color:var(--ink-2);user-select:none">
+        <input type="checkbox" id="sHasExam" class="cb-circle" ${hasExam ? 'checked' : ''}>
+        Este ramo tiene examen final
+      </label>
+      <div id="examWeightFields" style="${!hasExam ? 'display:none' : ''}">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px"><label class="small muted">Aprob.</label><input id="sPass" class="num-inp" style="width:100%" inputmode="decimal" value="${c.pass}"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px"><label class="small muted">Peso NP (%)</label><input id="sNp" class="num-inp" style="width:100%" inputmode="decimal" value="${c.npWeight}"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px"><label class="small muted">Peso Examen (%)</label><input id="sEx" class="num-inp" style="width:100%" inputmode="decimal" value="${c.examWeight}"></div>
+        </div>
+        <p class="fml" id="fmlNF">${fmlText}</p>
       </div>
-      <div style="flex:2"></div>
-    </div>
-    <div class="small muted" id="fmlNF">Final con examen: NF = ${((num(c.npWeight)||0)/100).toFixed(2)}·NP + ${((num(c.examWeight)||0)/100).toFixed(2)}·E</div>
-    <div class="small muted" style="margin-top:6px">El cálculo siempre usa precisión completa; los decimales solo cambian cómo se ve. La eximición compara el promedio real sin redondear.</div>`;
-  return `
-  <div class="card collapsible o4 ${open?'open':''}" data-collapse="config">
-    <button class="chead" data-toggle="config" aria-expanded="${open}">
-      <span class="ic">⚙️</span><span class="ctitle">Configuración del ramo</span>
-      <span class="csummary">${escapeHtml(configSummary(c))}</span>
-      <span class="chev">⌄</span>
+      <div id="noExamFields" style="${hasExam ? 'display:none' : ''}">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px"><label class="small muted">Aprob.</label><input id="sPass" class="num-inp" style="width:100%" inputmode="decimal" value="${c.pass}"></div>
+        </div>
+        <p class="fml">NF = NP (la nota final es tu promedio de evaluaciones)</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;margin-top:10px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px"><label class="small muted">Decimales</label>
+          <select id="sDec">
+            <option value="1" ${(+c.decimals || 1) === 1 ? 'selected' : ''}>1 decimal (4.5)</option>
+            <option value="2" ${(+c.decimals || 1) === 2 ? 'selected' : ''}>2 decimales (4.47)</option>
+          </select></div>
+        <div style="flex:2"></div>
+      </div>
+    </div></div>
+  </div>`;
+    }
+
+    /* ── Eximición ── */
+    function condShort(c, cd) {
+      const v = (cd.val !== '' && cd.val != null) ? fmt(num(cd.val)) : '—';
+      if (cd.type === 'np') return `NP ≥ ${v}`;
+      if (cd.type === 'minAll') return `Todas ≥ ${v}`;
+      if (cd.type === 'catAvg') return `Prom. ${cd.cat} ≥ ${v}`;
+      if (cd.type === 'eval') { const e = c.evals.find(x => x.id === cd.evalId); return `${e ? e.name : 'Eval'} ≥ ${v}`; }
+      return '';
+    }
+    function exemSum(c) {
+      if (!c.exemption.enabled) return 'Desactivada · siempre examen';
+      const nC = c.exemption.rules.reduce((a, r) => a + r.conds.length, 0);
+      if (nC === 0) return 'Sin reglas · siempre examen';
+      const st = exemStatus(c, calc(c)).overall;
+      const label = st === 'ok' ? 'Eximido' : st === 'no' ? 'No eximido' : 'Depende de pendientes';
+      const brief = c.exemption.rules.length === 1 && c.exemption.rules[0].conds.length === 1
+        ? condShort(c, c.exemption.rules[0].conds[0])
+        : `${c.exemption.rules.length} regla${c.exemption.rules.length > 1 ? 's' : ''}`;
+      return `${brief} · ${label}`;
+    }
+    function condRow(c, cd, gi, ci) {
+      const types = [['np', 'NP estimado'], ['minAll', 'Todas las notas'], ['catAvg', 'Prom. categoría'], ['eval', 'Una evaluación']];
+      const typeSel = `<select class="sub" data-cf="type" data-g="${gi}" data-c="${ci}">${types.map(t => `<option value="${t[0]}" ${cd.type === t[0] ? 'selected' : ''}>${t[1]}</option>`).join('')}</select>`;
+      let extra = '';
+      if (cd.type === 'catAvg') extra = `<select data-cf="cat" data-g="${gi}" data-c="${ci}" style="width:auto">${catOpts(cd.cat, c)}</select>`;
+      else if (cd.type === 'eval') extra = `<select data-cf="evalId" data-g="${gi}" data-c="${ci}" style="width:auto">${c.evals.map(e => `<option value="${e.id}" ${e.id === cd.evalId ? 'selected' : ''}>${esc(e.name)}</option>`).join('') || '<option>—</option>'}</select>`;
+      const res = evalCond(c, cd, calc(c));
+      return `<div class="cond-item" data-g="${gi}" data-c="${ci}">
+    <div class="cond-fields">${typeSel}${extra}<span class="op">≥</span><input data-cf="val" data-g="${gi}" data-c="${ci}" class="num-inp" inputmode="decimal" value="${cd.val ?? ''}" placeholder="${passOf(c).toFixed(1)}"></div>
+    <div class="cond-status">${condChip(res)}<span class="small muted" style="font-size:11px;white-space:nowrap">${esc(res.text)}</span></div>
+    <button class="btn btn-sm btn-ghost btn-danger" data-delcond="${gi}.${ci}" style="padding:4px 6px">${ic('x', 12)}</button>
+  </div>`;
+    }
+    function exemCard(c) {
+      const open = !!(state.ui && state.ui.exem), on = c.exemption.enabled;
+      const k = calc(c);
+      const groups = c.exemption.rules.map((rule, gi) => {
+        const cs = rule.conds.map((cd, ci) => condRow(c, cd, gi, ci)).join('');
+        const ruleState = exemStatus(c, k).groups[gi];
+        const ruleChip = !ruleState || ruleState.state === 'empty' ? ''
+          : ruleState.state === 'ok' ? '<span class="chip ok" style="margin-left:auto">se cumple</span>'
+            : ruleState.state === 'no' ? '<span class="chip no" style="margin-left:auto">no se cumple</span>'
+              : '<span class="chip neu" style="margin-left:auto">pendiente</span>';
+        return `<div class="rule-card" data-g="${gi}">
+      <div class="rule-card-head">
+        <span class="rule-num">Regla ${gi + 1}</span>
+        <span class="rule-logic muted small">— todas las condiciones</span>
+        ${ruleChip}
+        ${c.exemption.rules.length > 1 ? `<button class="btn btn-sm btn-ghost btn-danger" data-delrule="${gi}">${ic('x', 11)}</button>` : ''}
+      </div>
+      <div class="rule-card-body">
+        ${cs || '<p class="small muted" style="padding:6px 0">Sin condiciones. Agrega una.</p>'}
+        <button class="btn btn-sm" data-addcond="${gi}" style="margin-top:10px">${ic('plus', 12)} Agregar condición</button>
+      </div>
+    </div>`;
+      });
+      const orSeps = groups.map((g, i) => i < groups.length - 1 ? [g, '<div class="or-sep-wrap"><span class="or-pill">O</span></div>'] : [g]).flat();
+      return `
+  <div class="block coll ${open ? 'open' : ''}">
+    <button class="c-head" data-toggle="exem">
+      <span class="c-icon">${ic('shield', 12)}</span><span>Reglas de eximición</span>
+      <span class="c-sum">${esc(exemSum(c))}</span>
+      <span class="c-chev">▾</span>
     </button>
-    <div class="cbody"><div class="cbody-inner">${body}</div></div>
+    <div class="c-body"><div class="c-in">
+      <label class="small" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;cursor:pointer">
+        <input type="checkbox" id="exOn" class="cb-circle" ${on ? 'checked' : ''}>Activar reglas de eximición</label>
+      <div id="exBody" class="${on ? '' : 'hidden'}">
+        ${orSeps.join('')}
+        <button class="btn btn-sm" id="addRule" style="margin-top:8px">${ic('plus', 12)} Regla alternativa (O)</button>
+        <p class="small muted" style="margin-top:10px">Eximido si se cumple <b>cualquiera</b> de las reglas.</p>
+      </div>
+      ${on ? '' : '<p class="small muted">Desactivada: siempre se rinde examen.</p>'}
+    </div></div>
   </div>`;
-}
+    }
 
-function condShort(c,cd){
-  const v=(cd.val!==''&&cd.val!=null)?fmt(num(cd.val)):'—';
-  if(cd.type==='np') return `NP ≥ ${v}`;
-  if(cd.type==='minAll') return `Todas ≥ ${v}`;
-  if(cd.type==='catAvg') return `Prom. ${cd.cat} ≥ ${v}`;
-  if(cd.type==='eval'){ const e=c.evals.find(x=>x.id===cd.evalId); return `${e?e.name:'Eval'} ≥ ${v}`; }
-  return '';
-}
-function exemptionSummary(c){
-  if(!c.exemption.enabled) return 'Desactivada · siempre examen';
-  const nConds=c.exemption.rules.reduce((a,r)=>a+r.conds.length,0);
-  if(nConds===0) return 'Sin reglas · siempre examen';
-  const st=exemptionStatus(c,calc(c)).overall;
-  const status=st==='ok'?'Eximido':st==='no'?'No eximido':'Depende de pendientes';
-  let brief;
-  if(c.exemption.rules.length===1 && c.exemption.rules[0].conds.length===1) brief=condShort(c,c.exemption.rules[0].conds[0]);
-  else brief=`${c.exemption.rules.length} regla${c.exemption.rules.length>1?'s':''}`;
-  return `${brief} · ${status}`;
-}
-function exemptionCard(c){
-  const open=!!(state.ui&&state.ui.exem);
-  const on=c.exemption.enabled;
-  const groups=c.exemption.rules.map((rule,gi)=>{
-    const conds=rule.conds.map((cd,ci)=>condRow(c,cd,gi,ci)).join('');
-    return `<div class="rulebox" data-g="${gi}">
-        <div class="rt"><b>Regla ${gi+1}</b><span class="muted">se cumplen TODAS estas condiciones</span>
-          ${c.exemption.rules.length>1?`<button class="tiny ghost danger" data-delrule="${gi}" style="margin-left:auto">quitar</button>`:''}</div>
-        ${conds || '<div class="small muted">Sin condiciones. Agrega una.</div>'}
-        <button class="tiny" data-addcond="${gi}" style="margin-top:7px">+ condición</button>
-      </div>`;
-  }).join('<div class="orsep">— O —</div>');
-  const body=`
-    <label class="small" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:12px"><input type="checkbox" id="exOn" ${on?'checked':''} style="width:auto">Activar reglas de eximición</label>
-    <div id="exBody" class="${on?'':'hidden'}">
-      ${groups}
-      <button class="tiny" id="addRule" style="margin-top:4px">+ regla alternativa (O)</button>
-      <div class="small muted" style="margin-top:9px">Eximes si se cumple <b>cualquiera</b> de las reglas.</div>
-    </div>
-    ${on?'':'<div class="small muted">Eximición desactivada: siempre se rinde examen.</div>'}`;
-  return `
-  <div class="card collapsible o5 ${open?'open':''}" data-collapse="exem">
-    <button class="chead" data-toggle="exem" aria-expanded="${open}">
-      <span class="ic">🎓</span><span class="ctitle">Reglas de eximición</span>
-      <span class="csummary">${escapeHtml(exemptionSummary(c))}</span>
-      <span class="chev">⌄</span>
-    </button>
-    <div class="cbody"><div class="cbody-inner">${body}</div></div>
-  </div>`;
-}
-function condRow(c,cd,gi,ci){
-  const types=[['np','NP'],['minAll','Todas las notas'],['catAvg','Promedio de categoría'],['eval','Una evaluación']];
-  const typeSel=`<select class="sub" data-cf="type" data-g="${gi}" data-c="${ci}">${types.map(t=>`<option value="${t[0]}" ${cd.type===t[0]?'selected':''}>${t[1]}</option>`).join('')}</select>`;
-  let extra='';
-  if(cd.type==='catAvg') extra=`<select data-cf="cat" data-g="${gi}" data-c="${ci}">${catOptions(cd.cat,c)}</select>`;
-  else if(cd.type==='eval') extra=`<select data-cf="evalId" data-g="${gi}" data-c="${ci}">${c.evals.map(e=>`<option value="${e.id}" ${e.id===cd.evalId?'selected':''}>${escapeHtml(e.name)}</option>`).join('')||'<option>—</option>'}</select>`;
-  const res=evalCond(c,cd,calc(c));
-  return `<div class="cond" data-g="${gi}" data-c="${ci}">
-    ${typeSel}${extra}<span class="muted small">≥</span>
-    <input data-cf="val" data-g="${gi}" data-c="${ci}" class="num" inputmode="decimal" value="${cd.val??''}" placeholder="4.0">
-    <span class="condresult">${condChip(res)}</span>
-    <button class="tiny ghost danger" data-delcond="${gi}.${ci}" title="Quitar">✕</button>
-  </div>`;
-}
-function condChip(res){
-  const chip=res.state==='ok'?`<span class="chip ok small">cumple</span>`:res.state==='no'?`<span class="chip no small">no cumple</span>`:`<span class="chip neutral small">pendiente</span>`;
-  return `${chip}<span class="muted small">${escapeHtml(res.text)}</span>`;
-}
+    /* ── Resultados ── */
+    function resultsCard(c) {
+      const hasExam = c.hasExam !== false;
+      const k = calc(c), ex = exemStatus(c, k), pass = passOf(c);
+      const npW = hasExam ? (num(c.npWeight) || 0) / 100 : 1;
+      const exW = hasExam ? (num(c.examWeight) || 0) / 100 : 0;
+      const npCl = gClass(k.npEst, pass), avgCl = gClass(k.avgGraded, pass);
 
-function resultsCard(c){
-  const k=calc(c), ex=exemptionStatus(c,k), pass=num(c.pass)??4.0;
-  const npW=(num(c.npWeight)||0)/100, exW=(num(c.examWeight)||0)/100;
-  const npClass=k.npEst==null?'':(k.npEst>=pass?'ok':'no');
-  const avgClass=k.avgGraded==null?'':(k.avgGraded>=pass?'ok':'no');
-  const npCard=k.npEst==null?'':(k.npEst>=pass?'good':'bad');
-  const avgCard=k.avgGraded==null?'':(k.avgGraded>=pass?'good':'bad');
-  let banner;
-  if(ex.overall==='off') banner='<div class="banner neutral">Sin reglas de eximición · siempre se rinde examen</div>';
-  else if(ex.overall==='ok') banner='<div class="banner ok">🎉 ¡Estás eximido del examen!</div>';
-  else if(ex.overall==='no') banner='<div class="banner no">📝 Debes rendir el examen</div>';
-  else banner='<div class="banner warn">⏳ Depende de tus notas pendientes</div>';
-  let scenarios;
-  if(k.npEst!=null){ const np=k.npEst;
-    scenarios=`<ul class="scenarios">
-      <li><span class="lbl">Eximido y no rinde examen:</span> NF = <span class="nota ${np>=pass?'ok':'no'}">${fmt(np)}</span></li>
-      <li><span class="lbl">Rinde examen (depende de E):</span> NF = ${npW.toFixed(2)}·${fmt(np)} + ${exW.toFixed(2)}·E</li>
-    </ul>`;
-  } else scenarios='<div class="small muted">Ingresa notas para ver los escenarios de nota final.</div>';
-  return `
-  <div class="card">
-    <h2><span class="ic">📊</span>Resultados</h2>
-    <div class="stat-grid">
-      <div class="stat ${avgCard}"><div class="k">Promedio actual</div><div class="v nota ${avgClass}">${fmt(k.avgGraded)}</div><div class="s">${fmtW(k.gradedW)}% del ramo rendido</div></div>
-      <div class="stat ${npCard}"><div class="k">NP estimado</div><div class="v nota ${npClass}">${fmt(k.npEst)}</div><div class="s">${k.allGraded?'todas las notas listas':'estimación con lo rendido'}</div></div>
-    </div>
-    ${banner}
-    ${exBreakdown(ex)}
-    <div class="seclabel">Nota final</div>${scenarios}
-  </div>`;
-}
-function exBreakdown(ex){
-  if(ex.overall==='off') return '';
-  return ex.groups.map((g,i)=>{
-    if(g.state==='empty') return '';
-    const tag=g.state==='ok'?'<span class="chip ok small">se cumple</span>':g.state==='no'?'<span class="chip no small">no se cumple</span>':'<span class="chip neutral small">pendiente</span>';
-    const items=g.conds.map(x=>{
-      const dot=x.res.state==='ok'?'✓':x.res.state==='no'?'✕':'·';
-      const col=x.res.state==='ok'?'var(--good)':x.res.state==='no'?'var(--bad)':'var(--muted)';
-      return `<div class="small" style="color:${col}">${dot} ${escapeHtml(x.res.text)}</div>`;
-    }).join('');
-    return `<div class="small" style="margin-top:8px"><b>Regla ${i+1}</b> ${tag}</div>${items}`;
-  }).join('');
-}
-
-function calcsCard(c){
-  const k=calc(c), pass=num(c.pass)??4.0, exW=(num(c.examWeight)||0)/100;
-  let pendBlock=k.pendingW<=0?'<div class="small muted">No hay evaluaciones pendientes.</div>'
-    :`<div class="inline"><span class="small muted">NP objetivo:</span><input id="npTarget" inputmode="decimal" value="${pass.toFixed(1)}"><span class="small muted">peso pendiente: ${fmtW(k.pendingW)}%</span></div><div class="res" id="pendRes"></div>`;
-  let examBlock;
-  if(k.npEst==null) examBlock='<div class="small muted">Ingresa notas para estimar tu NP primero.</div>';
-  else if(exW<=0) examBlock='<div class="small muted">El examen pesa 0% en la final.</div>';
-  else examBlock=`<div class="inline"><span class="small muted">NP usado:</span><input id="npForExam" inputmode="decimal" value="${fmt(k.npEst)}"><span class="small muted">NF objetivo:</span><input id="nfTarget" inputmode="decimal" value="${pass.toFixed(1)}"></div><div class="res" id="examRes"></div>`;
-  let convBlock='';
-  if(k.npEst!=null && exW>0)
-    convBlock=`<div class="calc"><div class="q">¿Conviene rendir el examen si estás eximido?</div><div class="small">Rendir te <b>conviene</b> solo si esperas una nota de examen <b>mayor a tu NP</b> (${fmt(k.npEst)}). Si sacas justo ${fmt(k.npEst)}, tu nota no cambia; más bajo, baja.</div></div>`;
-  return `
-  <div class="card">
-    <h2><span class="ic">🎯</span>¿Qué nota necesito?</h2>
-    <div class="calc"><div class="q">Promedio necesario en lo que me falta para alcanzar un NP objetivo</div>${pendBlock}</div>
-    <div class="calc"><div class="q">Nota necesaria en el examen para una nota final objetivo</div>${examBlock}</div>
-    ${convBlock}
-  </div>`;
-}
-
-/* ---------------- bindings ---------------- */
-function colorizeGrade(input,pass){ const v=num(input.value); if(v==null){input.style.color='';input.style.fontWeight='';} else {input.style.color=v>=pass?'var(--good)':'var(--bad)';input.style.fontWeight='700';} }
-function refreshExemptionChips(c){
-  const k=calc(c);
-  document.querySelectorAll('.cond').forEach(row=>{
-    const gi=+row.dataset.g, ci=+row.dataset.c;
-    const rule=c.exemption.rules[gi]; if(!rule) return;
-    const cd=rule.conds[ci]; if(!cd) return;
-    const cr=row.querySelector('.condresult'); if(cr) cr.innerHTML=condChip(evalCond(c,cd,k));
-  });
-}
-function refreshResults(c){
-  const r=document.getElementById('results'); if(r) r.innerHTML=resultsCard(c);
-  const cc=document.getElementById('calcs'); if(cc){ cc.innerHTML=calcsCard(c); bindCalcs(c); }
-  refreshExemptionChips(c); updateSummaries(c);
-}
-function updateSummaries(c){
-  const cs=document.querySelector('[data-collapse="config"] .csummary'); if(cs) cs.textContent=configSummary(c);
-  const es=document.querySelector('[data-collapse="exem"] .csummary'); if(es) es.textContent=exemptionSummary(c);
-}
-function bindCollapsibles(){
-  document.querySelectorAll('[data-toggle]').forEach(btn=>{
-    btn.onclick=()=>{
-      const key=btn.dataset.toggle; if(!state.ui) state.ui={config:false,exem:false};
-      state.ui[key]=!state.ui[key]; persist();
-      const card=btn.closest('.card'); card.classList.toggle('open', state.ui[key]);
-      btn.setAttribute('aria-expanded', String(state.ui[key]));
-    };
-  });
-}
-function refreshAutoWeights(c){
-  const ew=effWeights(c);
-  document.querySelectorAll('.autow').forEach(s=>{ const id=s.dataset.evid; s.textContent=fmtW(ew[id]||0)+'%'; });
-  const cs=document.getElementById('catSum'); if(cs) cs.innerHTML=catWeightSumChip(c);
-}
-function newCat(){ const name=(prompt('Nombre de la nueva categoría:')||'').trim(); if(name && !state.categories.includes(name)) state.categories.push(name); return name; }
-function newEval(c){ return {id:uid(),name:"Evaluación "+(c.evals.length+1),cat:(usedCats(c)[0]||state.categories[0]||"Otro"),weight:'',grade:''}; }
-
-function switchWeightMode(c,mode){
-  if(mode===c.weightMode) return;
-  if(mode==='category'){
-    const cw={...(c.catWeights||{})};
-    usedCats(c).forEach(cat=>{
-      if(cw[cat]==null || cw[cat]===''){
-        const sum=c.evals.filter(e=>e.cat===cat).reduce((a,e)=>a+(num(e.weight)||0),0);
-        cw[cat]=r1(sum);
+      // Banner eximición (solo si tiene examen)
+      let banner = '';
+      if (hasExam) {
+        if (ex.overall === 'off') banner = '<div class="banner neu">Sin reglas · siempre se rinde examen</div>';
+        else if (ex.overall === 'ok') banner = '<div class="banner ok">¡Estás eximido del examen!</div>';
+        else if (ex.overall === 'no') banner = '<div class="banner no">Debes rendir el examen</div>';
+        else banner = '<div class="banner warn">Depende de notas pendientes</div>';
       }
-    });
-    c.catWeights=cw;
-  } else {
-    const ew=effWeights(c); c.evals.forEach(e=>{ e.weight=r2(ew[e.id]||0); });
-  }
-  c.weightMode=mode;
-}
 
-function bindEvals(c){
-  const pass=num(c.pass)??4.0;
-  document.querySelectorAll('.segbtn').forEach(b=>b.onclick=()=>{ switchWeightMode(c,b.dataset.mode); persist(); render(); });
-  const add=document.getElementById('addEv');
-  if(add) add.onclick=()=>{ c.evals.push(newEval(c)); persist(); render(); };
-  document.querySelectorAll('#evBody [data-del]').forEach(b=>b.onclick=()=>{ c.evals.splice(+b.dataset.del,1); persist(); render(); });
-  // pesos por categoría
-  document.querySelectorAll('[data-cw]').forEach(inp=>{
-    inp.addEventListener('input',()=>{ c.catWeights[inp.dataset.cw]=inp.value; persist(); refreshAutoWeights(c); refreshResults(c); });
-  });
-  document.querySelectorAll('#evBody tr[data-i]').forEach(tr=>{
-    const i=+tr.dataset.i;
-    tr.querySelectorAll('[data-f]').forEach(inp=>{
-      const f=inp.dataset.f;
-      if(inp.tagName==='SELECT'){
-        inp.addEventListener('change',()=>{
-          if(f==='cat' && inp.value==='__add__'){ const n=newCat(); if(n) c.evals[i].cat=n; persist(); render(); return; }
-          c.evals[i][f]=inp.value; persist();
-          if(f==='cat' && c.weightMode==='category'){ render(); } else { refreshResults(c); }
-        });
+      // Breakdown de reglas — tarjetas de notificación (solo con examen)
+      let breakdown = '';
+      if (hasExam && ex.overall !== 'off') {
+        const icons = { ok: '✓', no: '✗', pend: '·' };
+        const chipLbl = { ok: 'cumple', no: 'no cumple', pend: 'pendiente' };
+        const lines = ex.groups.map((g, i) => {
+          if (g.state === 'empty') return '';
+          const chipCl = g.state === 'ok' ? 'ok' : g.state === 'no' ? 'no' : 'neu';
+          const notifs = g.conds.map(x => `
+        <div class="cond-notif ${x.res.state}">
+          <span class="cond-notif-icon">${icons[x.res.state] || '·'}</span>
+          <div class="cond-notif-body">
+            <div class="cond-notif-title">${esc(x.res.label || x.res.text)}</div>
+            ${x.res.sub ? `<div class="cond-notif-sub">${esc(x.res.sub)}</div>` : ''}
+          </div>
+        </div>`).join('');
+          return `<div class="exem-rule-result ${g.state}">
+        <div class="exem-rule-header">
+          <span class="exem-rule-num">Regla ${i + 1}</span>
+          <span class="chip ${chipCl}" style="margin-left:auto">${chipLbl[g.state] || 'pendiente'}</span>
+        </div>
+        <div class="exem-conds">${notifs}</div>
+      </div>`;
+        }).filter(Boolean);
+        const hasNP = c.exemption.rules.some(r => r.conds.some(cd => cd.type === 'np'));
+        const legend = `<div class="exem-legend">
+      <strong>Referencias:</strong>
+      NP = Nota de Presentación${exW > 0 ? ' · E = Examen · NF = Nota Final' : ''}${hasNP ? '' : ' · NP = promedio ponderado de todas tus evaluaciones'}
+    </div>`;
+        if (lines.length) breakdown = `<div class="exem-breakdown">${lines.join('')}${legend}</div>`;
+      }
+
+      // Nota final - formula + escenarios
+      let notaFinal = '';
+      if (k.npEst != null) {
+        const np = k.npEst;
+        const npCl2 = gClass(np, pass);
+        if (!hasExam) {
+          notaFinal = `
+      <span class="sec-lbl">Nota final</span>
+      <div class="nf-formula">
+        <div class="nf-term">
+          <div class="nf-val ${npCl2}">${fmt(np)}</div>
+          <div class="nf-lbl">Nota final</div>
+        </div>
+      </div>
+      <div class="nf-scenarios">
+        <div class="nf-scenario" style="grid-column:1/-1">
+          <div class="nf-scen-lbl">Resultado</div>
+          <div class="nf-scen-val ${npCl2}">${fmt(np)}</div>
+          <div class="nf-scen-sub">NF = NP · sin examen final</div>
+        </div>
+      </div>`;
+        } else {
+          const eg = c.examGrade != null ? num(c.examGrade) : null;
+          const egCl = eg != null ? gClass(eg, pass) : 'nd';
+          const nf = eg != null ? npW * np + exW * eg : null;
+          const nfCl = nf != null ? gClass(nf, pass) : 'nd';
+          const isExempt = ex.overall === 'ok';
+          // Cuando eximido, la NF real = NP; el cálculo con examen es hipotético
+          const realNf = isExempt ? np : nf;
+          const realNfCl = isExempt ? npCl2 : nfCl;
+          const realNfLbl = isExempt ? 'Nota final (eximido)' : 'Nota final';
+          notaFinal = `
+    <span class="sec-lbl">Nota final</span>
+    <div class="nf-formula">
+      <div class="nf-term">
+        <div class="nf-val ${npCl2}">${fmt(np)}</div>
+        <div class="nf-lbl">NP × ${(npW * 100).toFixed(0)}%</div>
+      </div>
+      ${exW > 0 ? `
+      <div class="nf-op">+</div>
+      <div class="nf-term">
+        <div class="nf-val ${egCl}" id="formulaE">${eg != null ? fmt(eg) : 'E'}</div>
+        <div class="nf-lbl">Examen × ${(exW * 100).toFixed(0)}%</div>
+      </div>
+      <div class="nf-op">=</div>
+      <div class="nf-term">
+        <div class="nf-val ${realNfCl}" id="formulaNF">${realNf != null ? fmt(realNf) : 'NF'}</div>
+        <div class="nf-lbl">${realNfLbl}</div>
+      </div>`: ''}
+    </div>
+    ${exW > 0 ? (() => {
+              const showExim = ex.overall === 'ok' || ex.overall === 'pend';
+              const eximCard = showExim ? `
+      <div class="nf-scenario${isExempt ? ' nf-scenario-active' : ''}">
+        <div class="nf-scen-lbl">Eximido del examen${isExempt ? ' <span class="chip ok" style="font-size:9px;padding:1px 6px">tu caso</span>' : ''}</div>
+        <div class="nf-scen-val ${npCl2}">${fmt(np)}</div>
+        <div class="nf-scen-sub">NF = NP · sin rendir examen</div>
+      </div>` : '';
+              return `<div class="nf-scenarios">
+        ${eximCard}
+        <div class="nf-scenario${isExempt ? ' nf-scenario-muted' : ''}"${!showExim ? ' style="grid-column:1/-1"' : ''}>
+          <div class="nf-scen-lbl">${isExempt ? 'Si rindieras examen' : 'Con examen'}</div>
+          <div class="nf-scen-val ${nfCl}" id="examNfVal">${nf != null ? fmt(nf) : '—'}</div>
+          <div class="nf-scen-sub">
+            <div class="exam-sim-row">
+              <span>Nota examen:</span>
+              <input id="examSimInput" inputmode="decimal" placeholder="${pass.toFixed(1)}" value="${eg != null ? eg : ''}">
+            </div>
+            <div>${(npW).toFixed(2)}·${fmt(np)} + ${exW.toFixed(2)}·${eg != null ? fmt(eg) : 'E'}</div>
+          </div>
+        </div>
+      </div>`;
+            })()
+              : `<div class="nf-scenarios"><div class="nf-scenario">
+        <div class="nf-scen-lbl">Nota final</div>
+        <div class="nf-scen-val ${npCl2}">${fmt(np)}</div>
+        <div class="nf-scen-sub">Sin examen</div>
+      </div></div>`}`;
+        } // fin else hasExam
       } else {
-        inp.addEventListener('input',()=>{
-          c.evals[i][f]=inp.value; persist();
-          if(f==='grade') colorizeGrade(inp,pass);
-          if(f==='weight') updateWeightSum(c);
-          if(f==='share') refreshAutoWeights(c);
+        notaFinal = '<p class="small muted" style="margin-top:8px">Ingresa notas para ver la nota final estimada.</p>';
+      }
+
+      return `
+  <div class="block">
+    <div class="block-title"><span class="block-title-icon">${ic('barchart', 12)}</span> Resultados</div>
+    ${gradeHero(k, pass)}
+    ${banner}
+    ${breakdown}
+    ${notaFinal}
+  </div>`;
+    }
+
+    /* ── ¿Qué nota necesito? ── */
+    function exemCalcBlock(c, k, pass) {
+      const ex = exemStatus(c, k);
+      if (ex.overall === 'off') return '';
+      if (ex.overall === 'ok') {
+        return `<div class="calc-blk done">
+      <div class="calc-q">Para eximirte del examen</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="calc-big ok" style="font-size:22px">✓</span>
+        <span class="small muted">¡Eximido! Tu NP (${fmt(k.npEst)}) cumple las condiciones.</span>
+      </div>
+    </div>`;
+      }
+      const rules = ex.groups.map((g, i) => {
+        if (g.state === 'empty') return '';
+        if (g.state === 'ok') {
+          return `<div class="exim-need-rule">
+        <div class="exim-need-hdr" style="color:var(--good)">${ic('check', 10)} Regla ${i + 1} — ya cumplida</div>
+      </div>`;
+        }
+        const lines = g.conds.map(({ cd, res }) => {
+          if (res.state === 'ok') return null;
+          const val = num(cd.val); if (val == null) return null;
+
+          // Condition already determined impossible by evalCond
+          if (res.state === 'no') {
+            if (cd.type === 'np') {
+              return { impossible: true, msg: `NP actual (${fmt(k.npEst)}) no puede alcanzar ${fmt(val)}` };
+            }
+            if (cd.type === 'minAll') {
+              const worst = k.graded.length > 0 ? k.graded.reduce((a, b) => a.g <= b.g ? a : b) : null;
+              return {
+                impossible: true, msg: worst
+                  ? `${esc(worst.ev.name)} tiene ${fmt(worst.g)}, no alcanza ${fmt(val)}`
+                  : `Una nota ya ingresada no alcanza ${fmt(val)}`
+              };
+            }
+            if (cd.type === 'eval') {
+              const ev = c.evals.find(e => e.id === cd.evalId);
+              const g = ev ? num(ev.grade) : null;
+              return {
+                impossible: true, msg: ev && g != null
+                  ? `${esc(ev.name)} (${fmt(g)}) no alcanza ${fmt(val)}`
+                  : `Condición no cumplida`
+              };
+            }
+            // catAvg 'no': recalculate below to see if pending evals can still save it
+          }
+
+          // Calculate what's needed
+          if (cd.type === 'np') {
+            if (k.pendingW <= 0) return { impossible: true, msg: `NP actual (${fmt(k.npEst)}) no alcanza ${fmt(val)}` };
+            const need = (val - k.gradedSum) * 100 / k.pendingW;
+            if (need > 7.0) return { impossible: true, msg: `Imposible alcanzar NP ${fmt(val)} con lo que queda` };
+            if (need <= 1.0) return { msg: `Con cualquier nota alcanzas NP ≥ ${fmt(val)}` };
+            if (k.pending.length === 1) return { msg: `Necesitas <strong>${fmt(need)}</strong> en ${esc(k.pending[0].ev.name)}` };
+            return { msg: `Promedia <strong>${fmt(need)}</strong> en las evaluaciones pendientes (NP ≥ ${fmt(val)})` };
+          }
+          if (cd.type === 'minAll') {
+            if (k.pending.length === 1) return { msg: `Necesitas <strong>≥ ${fmt(val)}</strong> en ${esc(k.pending[0].ev.name)}` };
+            return { msg: `Todas las evaluaciones pendientes deben ser <strong>≥ ${fmt(val)}</strong>` };
+          }
+          if (cd.type === 'catAvg') {
+            let pendW = 0, totalCatW = 0, catGradedS = 0;
+            const pendCatEvs = [];
+            c.evals.forEach(ev => {
+              if (ev.cat !== cd.cat) return;
+              const w = k.ew[ev.id] || 0; totalCatW += w;
+              const g = num(ev.grade);
+              if (g != null) catGradedS += w * g;
+              else { pendW += w; pendCatEvs.push(ev); }
+            });
+            if (pendW <= 0) return { impossible: true, msg: `Promedio de ${esc(cd.cat)} no puede mejorar — sin evaluaciones pendientes` };
+            const need = (val * totalCatW - catGradedS) / pendW;
+            if (need > 7.0) return { impossible: true, msg: `Imposible alcanzar prom. ${fmt(val)} en ${esc(cd.cat)}` };
+            if (need <= 1.0) return { msg: `Con cualquier nota en ${esc(cd.cat)} alcanzas el promedio` };
+            if (pendCatEvs.length === 1) return { msg: `Necesitas <strong>${fmt(need)}</strong> en ${esc(pendCatEvs[0].name)}` };
+            return { msg: `Promedia <strong>${fmt(need)}</strong> en ${esc(cd.cat)} pendiente` };
+          }
+          if (cd.type === 'eval') {
+            const ev = c.evals.find(e => e.id === cd.evalId);
+            if (!ev) return null;
+            if (num(ev.grade) == null) return { msg: `Necesitas <strong>≥ ${fmt(val)}</strong> en ${esc(ev.name)}` };
+            return { impossible: true, msg: `${esc(ev.name)} (${fmt(num(ev.grade))}) no alcanza ${fmt(val)}` };
+          }
+          return null;
+        }).filter(Boolean);
+
+        const isImpossible = g.state === 'no' || lines.every(l => l.impossible);
+        const hdrStyle = isImpossible ? 'color:var(--bad)' : '';
+        const items = lines.map(l =>
+          l.impossible
+            ? `<div class="exim-need-item no"><span style="flex-shrink:0">${ic('x', 11)}</span><span class="muted">${l.msg}</span></div>`
+            : `<div class="exim-need-item"><span style="color:var(--accent);flex-shrink:0">→</span><span>${l.msg}</span></div>`
+        ).join('');
+        const ruleStyle = isImpossible ? ' style="opacity:.6"' : '';
+        return `<div class="exim-need-rule"${ruleStyle}>
+      <div class="exim-need-hdr" style="${hdrStyle}">Regla ${i + 1}${isImpossible ? ' — no es posible' : ''}</div>
+      ${items}
+    </div>`;
+      }).filter(Boolean).join('');
+      return `<div class="calc-blk">
+    <div class="calc-q">Para eximirte del examen</div>
+    ${rules}
+  </div>`;
+    }
+
+    function calcsCard(c) {
+      const k = calc(c), pass = passOf(c), hasExam = c.hasExam !== false;
+      const exW = hasExam ? (num(c.examWeight) || 0) / 100 : 0;
+      // Bloque 1: evaluaciones pendientes
+      const pendState = k.pendingW <= 0 ? 'done' : '';
+      const pendBlock = k.pendingW <= 0
+        ? `<p class="small" style="color:var(--good);font-weight:600">✓ Todas las evaluaciones están completas.</p>`
+        : `<div class="calc-res" id="pendRes"></div><div class="inline-r" style="margin-top:8px"><span class="il muted">NP necesaria:</span><input id="npTarget" inputmode="decimal" value="${pass.toFixed(1)}"><span class="il muted">${fmtW(k.pendingW)}% pendiente</span></div>`;
+      // Bloque 2: examen (solo si tiene examen)
+      let examSection = '';
+      if (hasExam) {
+        const examState = '';
+        let examBlock;
+        if (k.npEst == null) examBlock = '<p class="small muted">Ingresa notas para estimar tu NP primero.</p>';
+        else if (exW <= 0) examBlock = '<p class="small muted">El examen pesa 0%.</p>';
+        else examBlock = `<div class="calc-res" id="examRes"></div><div class="inline-r" style="margin-top:8px"><span class="il muted">NP:</span><input id="npForExam" inputmode="decimal" value="${fmt(k.npEst)}"><span class="il muted">Nota final deseada:</span><input id="nfTarget" inputmode="decimal" value="${pass.toFixed(1)}"></div>`;
+        examSection = `<div class="calc-blk ${examState}"><div class="calc-q">Nota de examen para una nota final objetivo</div>${examBlock}</div>`;
+      }
+      // Bloque 3: eximición
+      const exemSection = (hasExam && c.exemption?.enabled) ? exemCalcBlock(c, k, pass) : '';
+      return `
+  <div class="block">
+    <div class="block-title"><span class="block-title-icon">${ic('target', 12)}</span> ¿Qué nota necesito?</div>
+    <div class="calc-blk ${pendState}"><div class="calc-q">Promedio necesario en evaluaciones pendientes</div>${pendBlock}</div>
+    ${examSection}
+    ${exemSection}
+  </div>`;
+    }
+
+    /* ── Render principal ── */
+    function render() {
+      renderTabs();
+      const c = activeCourse();
+      if (!c) {
+        document.getElementById('mainPanel').innerHTML = `<div class="empty-state">
+      <div class="empty-mark">${ic('cap', 28)}</div>
+      <h3>Sin ramos</h3>
+      <p>Agrega tu primer ramo usando el botón de la barra de arriba.</p>
+      <button class="btn btn-primary" id="btnNewFirst">${ic('plus', 14)} Agregar ramo</button>
+    </div>`;
+        document.getElementById('btnNewFirst').onclick = () => {
+          const nc = newCourse(); state.courses.push(nc); state.active = nc.id; persist(); render();
+        };
+        return;
+      }
+      ensureFields(c); DEC = +c.decimals || 1;
+      document.getElementById('mainPanel').innerHTML = `
+    <div class="course-header">
+      <input class="course-name-input" id="cName" value="${escA(c.name)}" placeholder="Nombre del ramo">
+    </div>
+    <div class="content-grid">
+      <div class="col-left">${evalsCard(c)}<div id="results">${resultsCard(c)}</div></div>
+      <div class="col-right">${settingsCard(c)}${exemCard(c)}<div id="calcs">${calcsCard(c)}</div></div>
+    </div>`;
+      document.getElementById('cName').oninput = e => { c.name = e.target.value; renderTabs(); persist(); };
+      bindEvals(c); bindSettings(c); bindExem(c); bindCalcs(c); bindCollapsibles();
+      const _k = calc(c), _pass = passOf(c);
+      const _npW = (num(c.npWeight) || 0) / 100, _exW = (num(c.examWeight) || 0) / 100;
+      if (_k.npEst != null && _exW > 0) bindExamSim(c, _k.npEst, _npW, _exW, _pass);
+    }
+
+    function bindExamSim(c, np, npW, exW, pass) {
+      const inp = document.getElementById('examSimInput');
+      if (!inp) return;
+      inp.addEventListener('input', () => {
+        const e = num(inp.value.trim());
+        c.examGrade = e ?? null;
+        persist();
+        const eEl = document.getElementById('formulaE');
+        const nfEl = document.getElementById('formulaNF');
+        const scEl = document.getElementById('examNfVal');
+        const subEl = inp.closest('.nf-scen-sub')?.querySelector('div:last-child');
+        if (e == null || inp.value.trim() === '') {
+          if (eEl) { eEl.textContent = 'E'; eEl.className = 'nf-val nd'; }
+          if (nfEl) { nfEl.textContent = 'NF'; nfEl.className = 'nf-val nd'; }
+          if (scEl) { scEl.textContent = '—'; scEl.className = 'nf-scen-val nd'; }
+          if (subEl) subEl.textContent = `${npW.toFixed(2)}·${fmt(np)} + ${exW.toFixed(2)}·E`;
+        } else {
+          const nf = npW * np + exW * e;
+          const k2 = calc(c), ex2 = exemStatus(c, k2);
+          const isExempt = ex2.overall === 'ok';
+          // formulaNF muestra NP cuando eximido (NF real), nf cuando no eximido
+          if (eEl) { eEl.textContent = fmt(e); eEl.className = 'nf-val ' + gClass(e, pass); }
+          if (nfEl) { nfEl.textContent = isExempt ? fmt(np) : fmt(nf); nfEl.className = 'nf-val ' + (isExempt ? gClass(np, pass) : gClass(nf, pass)); }
+          if (scEl) { scEl.textContent = fmt(nf); scEl.className = 'nf-scen-val ' + gClass(nf, pass); }
+          if (subEl) subEl.textContent = `${npW.toFixed(2)}·${fmt(np)} + ${exW.toFixed(2)}·${fmt(e)}`;
+        }
+      });
+    }
+    function refreshResults(c) {
+      renderTabs();
+      const r = document.getElementById('results'); if (r) r.innerHTML = resultsCard(c);
+      const cc = document.getElementById('calcs'); if (cc) { cc.innerHTML = calcsCard(c); bindCalcs(c); }
+      refreshExemChips(c); updateSums(c);
+      const k = calc(c), pass = passOf(c);
+      const npW = (num(c.npWeight) || 0) / 100, exW = (num(c.examWeight) || 0) / 100;
+      if (k.npEst != null && exW > 0) bindExamSim(c, k.npEst, npW, exW, pass);
+    }
+    function refreshExemChips(c) {
+      const k = calc(c);
+      document.querySelectorAll('.cond-item').forEach(row => {
+        const gi = +row.dataset.g, ci = +row.dataset.c;
+        const rule = c.exemption.rules[gi]; if (!rule) return;
+        const cd = rule.conds[ci]; if (!cd) return;
+        const cr = row.querySelector('.cond-status'); if (!cr) return;
+        const res = evalCond(c, cd, k);
+        cr.innerHTML = `${condChip(res)}<span class="small muted" style="font-size:11px;white-space:nowrap">${esc(res.text)}</span>`;
+      });
+    }
+    function updateSums(c) {
+      const a = document.querySelector('[data-toggle="config"]'); if (a) { const s = a.querySelector('.c-sum'); if (s) s.textContent = cfgSum(c); }
+      const b = document.querySelector('[data-toggle="exem"]'); if (b) { const s = b.querySelector('.c-sum'); if (s) s.textContent = exemSum(c); }
+    }
+    function refreshAutoW(c) {
+      const ew = effWeights(c);
+      document.querySelectorAll('.autow').forEach(s => { const id = s.dataset.evid; s.textContent = fmtW(ew[id] || 0) + '%'; });
+      const cs = document.getElementById('catSum'); if (cs) cs.innerHTML = cwSumChip(c);
+    }
+
+    /* ── Bindings ── */
+    function bindCollapsibles() {
+      document.querySelectorAll('[data-toggle]').forEach(btn => {
+        btn.onclick = () => {
+          const key = btn.dataset.toggle;
+          if (!state.ui) state.ui = { config: false, exem: false };
+          state.ui[key] = !state.ui[key]; persist();
+          btn.closest('.coll').classList.toggle('open', state.ui[key]);
+        };
+      });
+    }
+    function newEval(c) { return { id: uid(), name: 'Evaluación ' + (c.evals.length + 1), cat: (usedCats(c)[0] || state.categories[0] || 'Otro'), weight: '', grade: '' }; }
+    function switchMode(c, mode) {
+      if (mode === c.weightMode) return;
+      if (mode === 'category') {
+        const cw = { ...(c.catWeights || {}) };
+        usedCats(c).forEach(cat => { if (cw[cat] == null || cw[cat] === '') { const s = c.evals.filter(e => e.cat === cat).reduce((a, e) => a + (num(e.weight) || 0), 0); cw[cat] = r1(s); } });
+        c.catWeights = cw;
+      } else { const ew = effWeights(c); c.evals.forEach(e => { e.weight = r2(ew[e.id] || 0); }); }
+      c.weightMode = mode;
+    }
+    function bindEvals(c) {
+      const pass = passOf(c);
+      document.querySelectorAll('.seg-btn').forEach(b => b.onclick = () => { switchMode(c, b.dataset.mode); persist(); render(); });
+      const add = document.getElementById('addEv'); if (add) add.onclick = () => { c.evals.push(newEval(c)); persist(); render(); };
+      document.querySelectorAll('#evBody [data-del]').forEach(b => b.onclick = () => { c.evals.splice(+b.dataset.del, 1); persist(); render(); });
+      document.querySelectorAll('[data-cw]').forEach(inp => { inp.addEventListener('input', () => { c.catWeights[inp.dataset.cw] = inp.value; persist(); refreshAutoW(c); refreshResults(c); }); });
+      // Drag-to-reorder
+      let dragIdx = null;
+      document.querySelectorAll('#evBody tr[data-i]').forEach(tr => {
+        const idx = +tr.dataset.i;
+        tr.addEventListener('dragstart', e => { dragIdx = idx; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+        tr.addEventListener('dragend', () => { tr.classList.remove('dragging'); document.querySelectorAll('#evBody tr').forEach(r => r.classList.remove('drag-over')); dragIdx = null; });
+        tr.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; tr.classList.add('drag-over'); });
+        tr.addEventListener('dragleave', () => tr.classList.remove('drag-over'));
+        tr.addEventListener('drop', e => { e.preventDefault(); tr.classList.remove('drag-over'); if (dragIdx == null || dragIdx === idx) return; const [removed] = c.evals.splice(dragIdx, 1); c.evals.splice(idx, 0, removed); persist(); render(); });
+      });
+      document.querySelectorAll('#evBody tr[data-i]').forEach(tr => {
+        const i = +tr.dataset.i;
+        tr.querySelectorAll('[data-f]').forEach(inp => {
+          const f = inp.dataset.f;
+          if (inp.tagName === 'SELECT') {
+            inp.addEventListener('change', () => {
+              if (f === 'cat' && inp.value === '__add__') {
+                const prev = c.evals[i].cat || state.categories[0] || '';
+                showCatDialog(n => {
+                  if (n) { c.evals[i].cat = n; persist(); render(); }
+                  else { inp.value = prev; }
+                });
+                return;
+              }
+              c.evals[i][f] = inp.value; persist();
+              if (f === 'cat' && c.weightMode === 'category') render(); else refreshResults(c);
+            });
+          } else {
+            inp.addEventListener('input', () => {
+              c.evals[i][f] = inp.value; persist();
+              if (f === 'grade') colorizeGrade(inp, pass);
+              if (f === 'weight') updateWTfoot(c);
+              if (f === 'share') refreshAutoW(c);
+              refreshResults(c);
+            });
+            if (f === 'grade') colorizeGrade(inp, pass);
+          }
+        });
+      });
+    }
+    function updateWTfoot(c) {
+      if (c.weightMode === 'category') return;
+      const eb = document.getElementById('evBody'); if (!eb) return;
+      const tf = eb.closest('table').querySelector('tfoot td'); if (!tf) return;
+      tf.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><button class="btn btn-sm" id="addEv">${ic('plus', 12)} Agregar evaluación</button>&nbsp;${wSumChip(c)}<span class="ev-empty-hint">nota vacía → aún no rendida</span></div>`;
+      document.getElementById('addEv').onclick = () => { c.evals.push(newEval(c)); persist(); render(); };
+    }
+    function bindSettings(c) {
+      const dec = document.getElementById('sDec');
+      if (dec) dec.onchange = () => { c.decimals = +dec.value; DEC = c.decimals; persist(); render(); };
+      const hasExamEl = document.getElementById('sHasExam');
+      if (hasExamEl) hasExamEl.onchange = () => {
+        c.hasExam = hasExamEl.checked;
+        persist();
+        const ef = document.getElementById('examWeightFields');
+        const nf = document.getElementById('noExamFields');
+        if (ef) ef.style.display = c.hasExam ? '' : 'none';
+        if (nf) nf.style.display = c.hasExam ? 'none' : '';
+        refreshResults(c);
+      };
+      const map = { sPass: 'pass', sNp: 'npWeight', sEx: 'examWeight' };
+      Object.entries(map).forEach(([id, key]) => {
+        const el = document.getElementById(id); if (!el) return;
+        el.addEventListener('input', () => {
+          c[key] = el.value; persist();
+          if (key === 'npWeight' || key === 'examWeight') { const f = document.getElementById('fmlNF'); if (f) f.textContent = `NF = ${((num(c.npWeight) || 0) / 100).toFixed(2)}·NP + ${((num(c.examWeight) || 0) / 100).toFixed(2)}·E`; }
+          if (key === 'pass') document.querySelectorAll('#evBody [data-f="grade"]').forEach(g => colorizeGrade(g, passOf(c)));
           refreshResults(c);
         });
+      });
+    }
+    function bindExem(c) {
+      const on = document.getElementById('exOn'); if (on) on.onchange = () => { c.exemption.enabled = on.checked; if (!c.exemption.rules.length) c.exemption.rules = [{ conds: [] }]; persist(); render(); };
+      const ar = document.getElementById('addRule'); if (ar) ar.onclick = () => { c.exemption.rules.push({ conds: [] }); persist(); render(); };
+      document.querySelectorAll('[data-delrule]').forEach(b => b.onclick = () => { c.exemption.rules.splice(+b.dataset.delrule, 1); if (!c.exemption.rules.length) c.exemption.rules = [{ conds: [] }]; persist(); render(); });
+      document.querySelectorAll('[data-addcond]').forEach(b => b.onclick = () => { const gi = +b.dataset.addcond; c.exemption.rules[gi].conds.push({ type: 'np', op: '>=', val: '', cat: (usedCats(c)[0] || state.categories[0] || 'Prueba'), evalId: (c.evals[0] && c.evals[0].id) || '' }); persist(); render(); });
+      document.querySelectorAll('[data-delcond]').forEach(b => b.onclick = () => { const [gi, ci] = b.dataset.delcond.split('.').map(Number); c.exemption.rules[gi].conds.splice(ci, 1); persist(); render(); });
+      document.querySelectorAll('[data-cf]').forEach(el => {
+        const gi = +el.dataset.g, ci = +el.dataset.c, f = el.dataset.cf;
+        el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+          if (f === 'cat' && el.value === '__add__') {
+            const prev = c.exemption.rules[gi].conds[ci].cat || state.categories[0] || '';
+            showCatDialog(n => {
+              if (n) { c.exemption.rules[gi].conds[ci].cat = n; persist(); render(); }
+              else { el.value = prev; }
+            });
+            return;
+          }
+          c.exemption.rules[gi].conds[ci][f] = el.value; persist();
+          if (el.tagName === 'SELECT') render();
+          else {
+            const row = el.closest('.cond-item');
+            const res = evalCond(c, c.exemption.rules[gi].conds[ci], calc(c));
+            if (row) {
+              const cs = row.querySelector('.cond-status');
+              if (cs) cs.innerHTML = `${condChip(res)}<span class="small muted" style="font-size:11px;white-space:nowrap">${esc(res.text)}</span>`;
+            }
+            refreshResults(c);
+          }
+        });
+      });
+    }
+    function bindCalcs(c) {
+      const k = calc(c), pass = passOf(c);
+      const npT = document.getElementById('npTarget');
+      if (npT) {
+        const run = () => {
+          const target = num(npT.value), res = document.getElementById('pendRes'); if (!res) return;
+          if (target == null) { res.innerHTML = ''; return; }
+          const need = (target - k.gradedSum) / (k.pendingW / 100);
+          if (need <= 1.0) res.innerHTML = `<span class="calc-big ok">¡Ya lo tienes!</span> <span class="small muted">con 1.0 en lo pendiente alcanzas ${fmt(target)}.</span>`;
+          else if (need > 7.0) res.innerHTML = `<span class="calc-big no">Imposible</span> <span class="small muted">necesitarías ${fmt(need)} (máx. 7.0).</span>`;
+          else res.innerHTML = `Necesitas <span class="calc-big ${gClass(need, pass)}">${fmt(need)}</span> <span class="small muted">promedio en lo que te falta.</span>`;
+        };
+        npT.addEventListener('input', run); run();
       }
-    });
-    const gi=tr.querySelector('[data-f="grade"]'); if(gi) colorizeGrade(gi,pass);
-  });
-}
-function updateWeightSum(c){
-  if(c.weightMode==='category') return;
-  const body=document.getElementById('evBody'); if(!body) return;
-  const tfoot=body.parentElement.querySelector('tfoot td'); if(!tfoot) return;
-  tfoot.innerHTML=`${weightSumChip(c)} &nbsp; <button class="tiny" id="addEv">+ Agregar evaluación</button>`;
-  document.getElementById('addEv').onclick=()=>{ c.evals.push(newEval(c)); persist(); render(); };
-}
+      const nfT = document.getElementById('nfTarget'), npE = document.getElementById('npForExam');
+      if (nfT && npE) {
+        const exW = (num(c.examWeight) || 0) / 100, npW = (num(c.npWeight) || 0) / 100;
+        const run = () => {
+          const res = document.getElementById('examRes'), target = num(nfT.value), np = num(npE.value); if (!res) return;
+          if (target == null || np == null) { res.innerHTML = ''; return; }
+          const need = (target - npW * np) / exW;
+          if (need <= 1.0) res.innerHTML = `<span class="calc-big ok">¡Ya está!</span> <span class="small muted">con cualquier nota logras ${fmt(target)}.</span>`;
+          else if (need > 7.0) res.innerHTML = `<span class="calc-big no">Imposible</span> <span class="small muted">necesitarías ${fmt(need)} (máx. 7.0).</span>`;
+          else res.innerHTML = `Necesitas <span class="calc-big ${gClass(need, pass)}">${fmt(need)}</span> <span class="small muted">en el examen para NF ${fmt(target)}.</span>`;
+        };
+        nfT.addEventListener('input', run); npE.addEventListener('input', run); run();
+      }
+    }
 
-function bindSettings(c){
-  const dec=document.getElementById('sDec');
-  if(dec) dec.onchange=()=>{ c.decimals=+dec.value; DEC=c.decimals; persist(); render(); };
-  const map={sPass:'pass',sNp:'npWeight',sEx:'examWeight'};
-  Object.entries(map).forEach(([id,key])=>{
-    const el=document.getElementById(id); if(!el) return;
-    el.addEventListener('input',()=>{
-      c[key]=el.value; persist();
-      if(key==='npWeight'||key==='examWeight'){ const f=document.getElementById('fmlNF'); if(f) f.textContent=`Final con examen: NF = ${((num(c.npWeight)||0)/100).toFixed(2)}·NP + ${((num(c.examWeight)||0)/100).toFixed(2)}·E`; }
-      if(key==='pass'){ const p=num(c.pass)??4.0; document.querySelectorAll('#evBody [data-f="grade"]').forEach(g=>colorizeGrade(g,p)); }
-      refreshResults(c);
-    });
-  });
-}
-
-function bindExemption(c){
-  const on=document.getElementById('exOn');
-  if(on) on.onchange=()=>{ c.exemption.enabled=on.checked; if(c.exemption.rules.length===0) c.exemption.rules=[{conds:[]}]; persist(); render(); };
-  const addRule=document.getElementById('addRule');
-  if(addRule) addRule.onclick=()=>{ c.exemption.rules.push({conds:[]}); persist(); render(); };
-  document.querySelectorAll('[data-delrule]').forEach(b=>b.onclick=()=>{ c.exemption.rules.splice(+b.dataset.delrule,1); if(c.exemption.rules.length===0)c.exemption.rules=[{conds:[]}]; persist(); render(); });
-  document.querySelectorAll('[data-addcond]').forEach(b=>b.onclick=()=>{ const gi=+b.dataset.addcond; c.exemption.rules[gi].conds.push({type:'np',op:'>=',val:'',cat:(usedCats(c)[0]||state.categories[0]||'Prueba'),evalId:(c.evals[0]&&c.evals[0].id)||''}); persist(); render(); });
-  document.querySelectorAll('[data-delcond]').forEach(b=>b.onclick=()=>{ const [gi,ci]=b.dataset.delcond.split('.').map(Number); c.exemption.rules[gi].conds.splice(ci,1); persist(); render(); });
-  document.querySelectorAll('[data-cf]').forEach(el=>{
-    const gi=+el.dataset.g, ci=+el.dataset.c, f=el.dataset.cf;
-    const evt=el.tagName==='SELECT'?'change':'input';
-    el.addEventListener(evt,()=>{
-      if(f==='cat' && el.value==='__add__'){ const n=newCat(); if(n) c.exemption.rules[gi].conds[ci].cat=n; persist(); render(); return; }
-      c.exemption.rules[gi].conds[ci][f]=el.value; persist();
-      if(el.tagName==='SELECT'){ render(); }
-      else { refreshResults(c); const row=el.closest('.cond'); const res=evalCond(c,c.exemption.rules[gi].conds[ci],calc(c)); row.querySelector('.condresult').innerHTML=condChip(res); }
-    });
-  });
-}
-
-function bindCalcs(c){
-  const k=calc(c); const pass=num(c.pass)??4.0;
-  const npT=document.getElementById('npTarget');
-  if(npT){
-    const run=()=>{
-      const target=num(npT.value), res=document.getElementById('pendRes');
-      if(target==null){ res.innerHTML=''; return; }
-      const need=(target-k.gradedSum)/(k.pendingW/100);
-      if(need<=1.0) res.innerHTML=`<span class="big nota ok">¡Ya lo tienes!</span> <span class="small muted">incluso con 1.0 en lo pendiente alcanzas ${fmt(target)}.</span>`;
-      else if(need>7.0) res.innerHTML=`<span class="big nota no">Imposible</span> <span class="small muted">necesitarías ${fmt(need)} (máx. 7.0). Apunta a otro objetivo o cuenta con el examen.</span>`;
-      else res.innerHTML=`Necesitas un promedio de <span class="big nota ${need>=pass?'ok':'no'}">${fmt(need)}</span> <span class="small muted">en cada evaluación pendiente.</span>`;
+    /* ── Import / Export ── */
+    document.getElementById('btnExport').onclick = () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gradiant-respaldo.json'; a.click(); URL.revokeObjectURL(a.href);
     };
-    npT.addEventListener('input',run); run();
-  }
-  const nfT=document.getElementById('nfTarget'), npE=document.getElementById('npForExam');
-  if(nfT&&npE){
-    const exW=(num(c.examWeight)||0)/100, npW=(num(c.npWeight)||0)/100;
-    const run=()=>{
-      const res=document.getElementById('examRes'), target=num(nfT.value), np=num(npE.value);
-      if(target==null||np==null){ res.innerHTML=''; return; }
-      const need=(target-npW*np)/exW;
-      if(need<=1.0) res.innerHTML=`<span class="big nota ok">¡Ya está!</span> <span class="small muted">con cualquier nota ≥1.0 logras ${fmt(target)}.</span>`;
-      else if(need>7.0) res.innerHTML=`<span class="big nota no">Imposible</span> <span class="small muted">necesitarías ${fmt(need)} (máx. 7.0) en el examen.</span>`;
-      else res.innerHTML=`Necesitas <span class="big nota ${need>=pass?'ok':'no'}">${fmt(need)}</span> <span class="small muted">en el examen para una NF de ${fmt(target)}.</span>`;
+    document.getElementById('btnImport').onclick = () => document.getElementById('fileImport').click();
+    document.getElementById('fileImport').onchange = e => {
+      const f = e.target.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try {
+          const data = JSON.parse(rd.result);
+          if (data && Array.isArray(data.courses)) { state = data; if (!state.categories) state.categories = [...DEFAULT_CATS]; ensureUI(); state.courses.forEach(ensureFields); if (!state.active && state.courses[0]) state.active = state.courses[0].id; if (state.theme) applyTheme(state.theme); persist(); render(); }
+          else showModal({ title: 'Archivo no válido', msg: 'El archivo no tiene el formato correcto de Gradiant.', confirmText: 'Entendido', showCancel: false });
+        } catch { showModal({ title: 'Error al importar', msg: 'No se pudo leer el archivo. Asegúrate de que sea un JSON exportado desde Gradiant.', confirmText: 'Entendido', showCancel: false }); }
+      };
+      rd.readAsText(f); e.target.value = '';
     };
-    nfT.addEventListener('input',run); npE.addEventListener('input',run); run();
-  }
-}
 
-/* ---------------- import/export ---------------- */
-document.getElementById('btnExport').onclick=()=>{
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mis-ramos.json'; a.click(); URL.revokeObjectURL(a.href);
-};
-document.getElementById('btnImport').onclick=()=>document.getElementById('fileImport').click();
-document.getElementById('fileImport').onchange=(e)=>{
-  const f=e.target.files[0]; if(!f) return;
-  const rd=new FileReader();
-  rd.onload=()=>{ try{ const data=JSON.parse(rd.result);
-    if(data&&Array.isArray(data.courses)){ state=data; if(!state.categories) state.categories=[...DEFAULT_CATS]; ensureUI(); state.courses.forEach(ensureFields); if(!state.active&&state.courses[0]) state.active=state.courses[0].id; persist(); render(); }
-    else alert('Archivo no válido.');
-  }catch(err){ alert('No se pudo leer el archivo.'); } };
-  rd.readAsText(f); e.target.value='';
-};
+    /* ── Modal genérico ── */
+    let _modalCb = null;
+    function showModal({ title, msg, confirmText = 'Aceptar', showCancel = true, danger = false, onConfirm, onCancel }) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalMsg').textContent = msg;
+      const ok = document.getElementById('modalConfirm');
+      const cancel = document.getElementById('modalCancel');
+      ok.textContent = confirmText;
+      ok.className = 'btn btn-sm ' + (danger ? 'btn-danger-fill' : 'btn-primary');
+      cancel.style.display = showCancel ? '' : 'none';
+      _modalCb = { onConfirm, onCancel };
+      document.getElementById('modalOverlay').classList.remove('hidden');
+      ok.focus();
+    }
+    function _closeModal(confirmed) {
+      document.getElementById('modalOverlay').classList.add('hidden');
+      const cb = _modalCb; _modalCb = null;
+      if (confirmed && cb?.onConfirm) cb.onConfirm();
+      else if (!confirmed && cb?.onCancel) cb.onCancel();
+    }
+    function initModal() {
+      document.getElementById('modalConfirm').onclick = () => _closeModal(true);
+      document.getElementById('modalCancel').onclick = () => _closeModal(false);
+      document.getElementById('modalOverlay').addEventListener('click', e => {
+        if (e.target === e.currentTarget) _closeModal(false);
+      });
+      document.addEventListener('keydown', e => {
+        if (document.getElementById('modalOverlay').classList.contains('hidden')) return;
+        if (e.key === 'Escape') _closeModal(false);
+      });
+    }
 
-/* ---------------- helpers ---------------- */
-function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-function escapeAttr(s){ return escapeHtml(s).replace(/'/g,'&#39;'); }
-function deleteCourse(id){
-  const c=state.courses.find(x=>x.id===id);
-  if(!confirm(`¿Eliminar "${c?c.name:'ramo'}"?`)) return;
-  state.courses=state.courses.filter(x=>x.id!==id);
-  if(state.active===id) state.active=state.courses[0]?state.courses[0].id:null;
-  persist(); render();
-}
+    /* ── Eliminar ramo ── */
+    function deleteCourse(id) {
+      const c = state.courses.find(x => x.id === id);
+      showModal({
+        title: 'Eliminar ramo',
+        msg: `¿Eliminar "${c ? c.name : 'ramo'}"? Esta acción no se puede deshacer.`,
+        confirmText: 'Eliminar',
+        danger: true,
+        onConfirm: () => {
+          state.courses = state.courses.filter(x => x.id !== id);
+          if (state.active === id) state.active = state.courses[0] ? state.courses[0].id : null;
+          persist(); render();
+        }
+      });
+    }
 
-/* ---------------- init ---------------- */
-(async function(){
-  const loaded=await Store.load();
-  if(loaded&&Array.isArray(loaded.courses)&&loaded.courses.length){
-    state=loaded; if(!state.categories) state.categories=[...DEFAULT_CATS]; ensureUI(); state.courses.forEach(ensureFields); if(!state.active) state.active=state.courses[0].id;
-  } else { const d=demoCourse(); state={courses:[d],active:d.id,categories:[...DEFAULT_CATS],ui:{config:false,exem:false}}; persist(); }
-  render();
-})();
-</script>
+    /* ── Tema ── */
+    document.getElementById('btnTheme').onclick = () => {
+      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(state.theme); persist();
+    };
+
+    /* ── Init ── */
+    initCatDialog();
+    initModal();
+    (async function () {
+      const loaded = await Store.load();
+      if (loaded && Array.isArray(loaded.courses) && loaded.courses.length) {
+        state = loaded;
+        if (!state.categories) state.categories = [...DEFAULT_CATS];
+        ensureUI(); state.courses.forEach(ensureFields);
+        if (!state.active && state.courses[0]) state.active = state.courses[0].id;
+      } else {
+        const d = demoCourse();
+        state = { courses: [d], active: d.id, categories: [...DEFAULT_CATS], ui: { config: false, exem: false }, theme: 'dark' };
+        persist();
+      }
+      applyTheme(state.theme || 'dark');
+      render();
+    })();
+  </script>
 </body>
+
 </html>

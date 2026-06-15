@@ -1,86 +1,136 @@
-# Calculadora de Notas
+# Gradiant 🎓
 
-Calculadora de ponderaciones, eximición y "¿qué nota necesito?" para el sistema universitario chileno (escala 1.0–7.0). Maneja varios ramos a la vez, cada uno con su propia estructura de evaluaciones y sus propias reglas de eximición.
+> Gestiona tus ramos universitarios chilenos (escala 1.0–7.0): calcula promedios, simula el examen, visualiza reglas de eximición y sabe exactamente qué nota necesitas.
 
-Es una aplicación web de un solo archivo, sin dependencias ni instalación: se abre en cualquier navegador y guarda tus ramos automáticamente.
+**Sin instalación · Sin servidor · Funciona offline · Todo en un archivo**
+
+---
+
+## Vista rápida
+
+| Lo que hace | Cómo lo hace |
+|---|---|
+| Varios ramos en paralelo | Pestañas independientes, guardado automático |
+| Notas en color según estado | 🔴 < 4.0 · 🟡 = 4.0 · 🟢 > 4.0 |
+| Progreso de evaluaciones | Barra rojo → verde a medida que completas notas |
+| Reordenar evaluaciones | Arrastra y suelta las filas |
+| Calcular nota de examen | "Para NF 5.0 necesitas **4.3** en el examen" |
+| Calcular nota pendiente | "Necesitas **5.1** en Prueba 3" |
+| Reglas de eximición | Detecta si ya te eximiste o qué nota te falta |
+
+---
 
 ## Características
 
-- **Varios ramos** en pestañas, cada uno independiente.
-- **Evaluaciones flexibles** con nombre, categoría, peso y nota. La nota puede quedar vacía si aún no la rindes.
+### Evaluaciones
+- Nombre, categoría, peso y nota por evaluación
+- Nota vacía = evaluación pendiente (se incluye en el cálculo de lo que falta)
 - **Dos modos de ponderación:**
-  - *Por evaluación:* cada evaluación lleva su propio peso %.
-  - *Por categoría:* defines el peso de cada categoría una vez (ej. Tareas = 25%) y se reparte entre sus evaluaciones, con un "relativo" opcional para que dentro de una categoría unas pesen más que otras.
-- **Categorías personalizables** (Prueba, Control, Tarea, Proyecto, Laboratorio… y las que agregues).
-- **Reglas de eximición combinables** (NP, promedio de categoría, todas las notas, una evaluación específica), unidas por "o".
-- **Resultados claros:** promedio actual, NP estimado, banner de estado de eximición (eximido / depende de pendientes / debes rendir) y escenarios de nota final.
-- **"¿Qué nota necesito?":** qué promedio necesitas en lo que falta para un NP objetivo, y qué nota necesitas en el examen para una nota final objetivo.
-- **Precisión configurable:** muestra 1 o 2 decimales. El cálculo interno siempre usa precisión completa; la eximición compara el promedio real sin redondear.
-- **Respaldo:** exporta e importa todos tus ramos como JSON.
+  - *Por evaluación:* cada una lleva su propio peso %
+  - *Por categoría:* defines el peso del grupo (ej. Pruebas = 75%) y se reparte automáticamente; con "relativo" opcional para que unas pesen más que otras dentro del grupo
+- **Arrastra y suelta** para reordenar las filas
 
-## Uso online (GitHub Pages)
+### Colores de notas
+Las notas se colorean en tiempo real comparando con la nota de aprobación configurada:
+- 🟢 **Verde** — sobre la nota de aprobación
+- 🟡 **Amarillo** — exactamente en la nota de aprobación (ej. 4.0)
+- 🔴 **Rojo** — bajo la nota de aprobación
 
-Si publicas el repositorio con GitHub Pages, la app queda disponible en:
+### Resultados
+- **Promedio actual** (NP estimado con las notas ingresadas)
+- **Barra de progreso** rojo → amarillo → verde según el porcentaje completado
+- **Estado de eximición** al instante: eximido ✓ / posible / no es posible
+- **Escenarios de nota final:** con y sin examen, cuánto cambia tu nota según lo que saques
+
+### ¿Qué nota necesito?
+- **En evaluaciones pendientes:** qué promedio necesitas en lo que queda para alcanzar un NP objetivo
+- **En el examen:** qué nota necesitas en el examen para una nota final deseada
+- Ambos muestran el resultado primero, los campos de ajuste debajo
+
+### Reglas de eximición
+- Condiciones combinables por OR entre reglas, AND entre condiciones de una misma regla:
+  - NP ≥ X
+  - Promedio de categoría ≥ X
+  - Todas las evaluaciones ≥ X
+  - Una evaluación específica ≥ X
+- **Recomendaciones específicas** cuando falta una nota: "Necesitas **5.0** en Prueba 2"
+- **Detección de imposibles:** si una nota ya ingresada rompe la condición, avisa en rojo con el motivo ("Prueba 2 tiene 3.0, no alcanza 4.0")
+
+### Otras funciones
+- **Temas:** claro y oscuro
+- **Precisión configurable:** 1 o 2 decimales
+- **Categorías personalizables:** Prueba, Control, Tarea, Proyecto, Laboratorio…
+- **Exportar / Importar:** respaldo en JSON para llevar tus ramos a otro equipo
+
+---
+
+## Uso online
+
+Si publicas el repo con GitHub Pages, la app queda en:
 
 ```
-https://TU_USUARIO.github.io/calculadora-notas/
+https://TomTowerg.github.io/calculadora-notas/
 ```
 
-Para activarlo: en el repo, **Settings → Pages → Source: Deploy from a branch → Branch: `main` / carpeta `/ (root)` → Save**. En unos minutos estará en línea.
+Para activarlo: **Settings → Pages → Branch: `main` / `/ (root)` → Save**
 
-> Nota: GitHub Pages es gratis en repositorios **públicos**. En repositorios **privados** requiere un plan pago de GitHub.
+> GitHub Pages es gratis en repositorios públicos.
 
-## Cómo ejecutarla localmente
+---
 
-No necesita compilación. Tienes dos opciones:
+## Usar localmente
 
-1. **Abrir directo:** doble clic en `index.html`.
-2. **Servidor local** (recomendado, para que el guardado funcione igual que en producción):
+Solo abre `index.html` en tu navegador. No necesita servidor ni instalación.
 
 ```bash
-# con Python
+# Opcionalmente con servidor local:
 python3 -m http.server 8000
-# luego abre http://localhost:8000
+# → http://localhost:8000
 ```
 
-## Cómo usarla
+---
 
-1. Crea un ramo con **+ Agregar ramo** y ponle nombre.
-2. Agrega tus evaluaciones (nombre, categoría, peso y nota). Si los pesos no suman 100%, te avisa.
-3. En **Configuración** define la nota de aprobación y cuánto pesan el NP y el examen en la nota final.
-4. En **Reglas de eximición** arma las condiciones de tu reglamento (puedes unir reglas con "o").
-5. Mira los **Resultados** y usa **¿Qué nota necesito?** para saber qué te falta.
-6. Usa **Exportar** para respaldar tus ramos.
+## Guía rápida
 
-## El sistema de notas
+1. **Crea un ramo** con el botón `+ Ramo` en la barra de pestañas
+2. **Agrega evaluaciones** con nombre, categoría y peso
+3. **Configura** la nota de aprobación y el peso del examen en *Configuración*
+4. **Define las reglas de eximición** si tu reglamento lo permite
+5. **Ingresa notas** a medida que rindes — los colores y cálculos se actualizan al instante
+6. Usa **¿Qué nota necesito?** para saber qué te falta
+7. **Exporta** para hacer respaldo
 
-Pensada para el sistema chileno: notas de 1.0 a 7.0, aprobación habitual en 4.0, y todo se muestra con un decimal. La nota de presentación (NP) es el promedio ponderado de las evaluaciones; la nota final (NF) depende de si rindes o no el examen y de si estás eximido, según las reglas que configures.
+---
 
-## Estructura del proyecto
+## El sistema de notas chileno
+
+- Escala 1.0 – 7.0
+- Aprobación habitual: **4.0** (configurable por ramo)
+- Nota de Presentación (NP): promedio ponderado de evaluaciones
+- Nota Final (NF): combinación de NP + Examen según los pesos configurados
+- Si estás eximido: NF = NP (sin rendir examen)
+
+---
+
+## Estructura
 
 ```
 calculadora-notas/
-├── index.html      La aplicación (HTML + CSS + JS, sin dependencias)
+├── index.html      Toda la app (HTML + CSS + JS, sin dependencias)
 ├── README.md
 ├── LICENSE
 └── .gitignore
 ```
 
-## Tecnologías
+HTML, CSS y JavaScript puro — sin frameworks, sin build, sin Node.js.
 
-HTML, CSS y JavaScript puro (vanilla), sin frameworks ni build. Toda la lógica vive en `index.html`.
+---
 
 ## Privacidad
 
-Tus datos se guardan **solo en tu navegador** (no se envían a ningún servidor). Para llevarlos a otro equipo, usa Exportar/Importar.
+Tus datos se guardan **únicamente en tu navegador** (localStorage). No se envía nada a ningún servidor. Usa Exportar/Importar para mover datos entre equipos.
 
-## Próximas mejoras (ideas)
-
-- Vista de resumen con todos los ramos (aprobados / eximidos / en riesgo).
-- Control de asistencia mínima.
-- Opción de promedio simple vs. ponderado para "promedio de categoría".
-- Modo truncar (además de redondear) según reglamento.
-- Estado vacío y responsividad móvil más pulidos.
+---
 
 ## Licencia
 
