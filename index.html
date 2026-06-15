@@ -5,6 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gradiant</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Gradiant">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap"
     rel="stylesheet">
@@ -3374,6 +3380,13 @@
       onAuthStateChanged(fbAuth, onUserLogin);
     } else {
       renderAuthArea(null);
+    }
+
+    /* Registrar service worker para PWA */
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(e =>
+        console.warn('[Gradiant] SW no registrado:', e)
+      );
     }
   </script>
 </body>
