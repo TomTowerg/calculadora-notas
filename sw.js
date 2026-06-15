@@ -2,12 +2,14 @@
    Estrategia: cache-first para la app, network-only para Firebase.
    Al actualizar la versión, cambiar CACHE_NAME para forzar recarga. */
 
-const CACHE_NAME = 'gradiant-v1';
+const CACHE_NAME = 'gradiant-v3';
 const APP_FILES = [
   '/',
   '/index.html',
   '/icon-192.png',
   '/icon-512.png',
+  '/icon-maskable-192.png',
+  '/icon-maskable-512.png',
 ];
 
 /* URLs de Firebase que nunca se cachean */
