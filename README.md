@@ -1,6 +1,6 @@
 # Gradiant 🎓
 
-> Gestiona tus ramos universitarios chilenos (escala 1.0–7.0): calcula promedios, simula el examen, visualiza reglas de eximición y sabe exactamente qué nota necesitas.
+> Gestiona tus ramos universitarios (escala 1.0–7.0): calcula promedios, simula el examen, visualiza reglas de eximición y sabe exactamente qué nota necesitas.
 
 **Sin instalación · Sin servidor · Funciona offline · Todo en un archivo**
 

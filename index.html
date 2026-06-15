@@ -12,15 +12,15 @@
     /* ─── TOKENS ─── */
     :root {
       color-scheme: dark;
-      --bg: #0a0c10;
-      --bg-2: #10131a;
-      --surface: #14182a;
-      --surface-2: #1a1e2e;
-      --border: #242840;
-      --border-2: #303550;
+      --bg: #161920;
+      --bg-2: #1c1f28;
+      --surface: #20243a;
+      --surface-2: #262a3e;
+      --border: #333858;
+      --border-2: #3e4368;
       --ink: #f0f4f8;
-      --ink-2: #8896aa;
-      --muted: #5a6880;
+      --ink-2: #9aa8bc;
+      --muted: #7282a0;
       --accent: #e2e8f0;
       --accent-d: #b8c4d4;
       --accent-s: rgba(226, 232, 240, .09);
@@ -134,7 +134,7 @@
 
     .brand-mark svg {
       color: #fff;
-      filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .25));
     }
 
     [data-theme="light"] .brand-mark {
@@ -166,6 +166,20 @@
       display: flex;
       align-items: center;
       gap: 6px;
+    }
+
+    /* ── Auth area ── */
+    #authArea { display: flex; align-items: center; gap: 8px; }
+    .auth-user { display: flex; align-items: center; gap: 7px; }
+    .auth-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .auth-initials {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 10px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .auth-name {
+      font-size: 12px; color: var(--ink-2);
+      max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
     /* ─── TABS ─── */
@@ -644,12 +658,24 @@
 
     /* Columnas fijas: categoría, peso, nota, borrar no se estiran */
     #evBody td:nth-child(3),
-    thead tr th:nth-child(3) { width: 130px; }
+    thead tr th:nth-child(3) {
+      width: 130px;
+    }
+
     #evBody td:nth-child(4),
-    thead tr th:nth-child(4) { width: 76px; }
-    .ev-nota { width: 76px; padding-left: 20px !important; }
+    thead tr th:nth-child(4) {
+      width: 76px;
+    }
+
+    .ev-nota {
+      width: 76px;
+      padding-left: 20px !important;
+    }
+
     #evBody td:last-child,
-    thead tr th:last-child { width: 32px; }
+    thead tr th:last-child {
+      width: 32px;
+    }
 
     tfoot td {
       padding-top: 12px;
@@ -714,9 +740,23 @@
     }
 
     /* Grade input colored backgrounds */
-    #evBody .g-ok   { background: var(--good-s); border-color: var(--good-b); font-weight: 700; }
-    #evBody .g-warn { background: var(--warn-s); border-color: var(--warn-b); font-weight: 700; }
-    #evBody .g-no   { background: var(--bad-s);  border-color: var(--bad-b);  font-weight: 700; }
+    #evBody .g-ok {
+      background: var(--good-s);
+      border-color: var(--good-b);
+      font-weight: 700;
+    }
+
+    #evBody .g-warn {
+      background: var(--warn-s);
+      border-color: var(--warn-b);
+      font-weight: 700;
+    }
+
+    #evBody .g-no {
+      background: var(--bad-s);
+      border-color: var(--bad-b);
+      font-weight: 700;
+    }
 
     /* ─── SEG CONTROL ─── */
     .seg {
@@ -751,7 +791,7 @@
     .seg-btn.on {
       background: linear-gradient(135deg, #6366f1, #8b5cf6);
       color: #fff;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 4px rgba(99,102,241,.35);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 1px 4px rgba(99, 102, 241, .35);
     }
 
     /* ─── CHIPS ─── */
@@ -1593,6 +1633,8 @@
       color: var(--muted);
       font-variant-numeric: tabular-nums;
       font-size: 12.5px;
+      display: block;
+      text-align: center;
       white-space: nowrap
     }
 
@@ -1834,34 +1876,16 @@
       <div class="brand">
         <div class="brand-mark">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
-            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
+            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
           </svg>
         </div>
         <span class="brand-name">Gradiant</span>
       </div>
       <div class="topbar-gap"></div>
       <div class="topbar-right">
+        <div id="authArea"></div>
         <button class="icon-btn" id="btnTheme" title="Cambiar tema"></button>
-        <button class="btn btn-ghost btn-sm" id="btnImport">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          <span class="btn-label">Importar</span>
-        </button>
-        <button class="btn btn-ghost btn-sm" id="btnExport">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-          <span class="btn-label">Exportar</span>
-        </button>
-        <input type="file" id="fileImport" accept="application/json" class="hidden">
       </div>
     </header>
 
@@ -1900,11 +1924,31 @@
       </div>
     </div>
 
-    <footer>Escala 1.0 – 7.0 · Datos guardados automáticamente en este navegador · Exportar para respaldarlos</footer>
   </div>
 
-  <script>
-    "use strict";
+  <script type="module">
+    /* ── Firebase (CDN modular, versión fija) ── */
+    import { initializeApp }                                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, signInWithPopup, GoogleAuthProvider,
+             onAuthStateChanged, signOut }                            from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    /* ── Firebase config (pública por diseño; seguridad = reglas Firestore) ── */
+    const firebaseConfig = {
+      apiKey:            "AIzaSyB_BJZ2ehL_bye-6Z4hM_4ArgV5yWusB2Q",
+      authDomain:        "gradiant-6da72.firebaseapp.com",
+      projectId:         "gradiant-6da72",
+      storageBucket:     "gradiant-6da72.firebasestorage.app",
+      messagingSenderId: "866991632250",
+      appId:             "1:866991632250:web:d08646b634583d115db0c3",
+    };
+
+    /* Si Firebase falla, la app sigue funcionando en modo local sin errores */
+    let fbAuth = null;
+    try {
+      fbAuth = getAuth(initializeApp(firebaseConfig));
+    } catch (e) {
+      console.warn('[Gradiant] Firebase no disponible, modo local activo.', e);
+    }
 
     /* ── Iconos SVG ── */
     function ic(name, sz) {
@@ -2240,7 +2284,7 @@
       <td class="ev-name"><input data-f="name" value="${escA(ev.name)}" placeholder="Nombre"></td>
       <td><select data-f="cat" style="width:auto;min-width:84px">${catOpts(ev.cat, c)}</select></td>
       <td>${isCat
-          ? `<div class="relcell"><input class="num-inp rel-inp" data-f="share" inputmode="decimal" value="${ev.share ?? ''}" placeholder="1"><span class="autow" data-evid="${ev.id}">${fmtW(ew[ev.id] || 0)}%</span></div>`
+          ? `<span class="autow" data-evid="${ev.id}">${fmtW(ew[ev.id] || 0)}%</span>`
           : `<input class="num-inp" data-f="weight" inputmode="decimal" value="${ev.weight ?? ''}" placeholder="%">`}</td>
       <td class="ev-nota"><input class="num-inp" data-f="grade" inputmode="decimal" value="${ev.grade ?? ''}" placeholder="—"></td>
       <td><button class="btn btn-sm btn-ghost btn-danger" data-del="${i}">${ic('x', 12)}</button></td>
@@ -2251,14 +2295,14 @@
     <div class="block-title"><span class="block-title-icon">${ic('list', 12)}</span> Evaluaciones</div>
     <div class="seg">
       <button class="seg-btn ${isCat ? '' : 'on'}" data-mode="eval">Por evaluación</button>
-      <button class="seg-btn ${isCat ? 'on' : ''}" data-mode="category">Por categoría</button>
+      <button class="seg-btn ${isCat ? 'on' : ''}" data-mode="category">Por grupo</button>
     </div>
     <p class="modehint">${isCat
-          ? 'Asigna un % a cada categoría; se reparte entre sus evaluaciones.'
+          ? 'Asigna un % a cada grupo; se reparte automáticamente entre sus evaluaciones.'
           : 'Cada evaluación lleva su propio porcentaje.'}</p>
     ${isCat ? catPanel(c) : ''}
     <table>
-      <thead><tr><th></th><th>Evaluación</th><th>Categoría</th><th>${isCat ? 'Rel · %' : 'Ponderación %'}</th><th class="ev-nota">Nota</th><th></th></tr></thead>
+      <thead><tr><th></th><th>Evaluación</th><th>Categoría</th><th>Ponderación %</th><th class="ev-nota">Nota</th><th></th></tr></thead>
       <tbody id="evBody">${rows || `<tr><td colspan="6" class="muted small" style="padding:12px 0">Sin evaluaciones. Agrega la primera.</td></tr>`}</tbody>
       <tfoot><tr><td colspan="6"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-sm" id="addEv">${ic('plus', 12)} Agregar evaluación</button>${foot}<span class="ev-empty-hint">nota vacía → aún no rendida</span></div></td></tr></tfoot>
     </table>
@@ -2275,7 +2319,7 @@
     </div>`;
       }).join('') || '<p class="small muted">Agrega evaluaciones para asignar pesos por categoría.</p>';
       return `<div class="cat-panel">
-    <div class="cat-panel-t">Peso de cada categoría (debe sumar 100%)</div>
+    <div class="cat-panel-t">Ponderación de cada grupo (debe sumar 100%)</div>
     ${rows}<div id="catSum">${cwSumChip(c)}</div>
   </div>`;
     }
@@ -2934,24 +2978,6 @@
       }
     }
 
-    /* ── Import / Export ── */
-    document.getElementById('btnExport').onclick = () => {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gradiant-respaldo.json'; a.click(); URL.revokeObjectURL(a.href);
-    };
-    document.getElementById('btnImport').onclick = () => document.getElementById('fileImport').click();
-    document.getElementById('fileImport').onchange = e => {
-      const f = e.target.files[0]; if (!f) return;
-      const rd = new FileReader();
-      rd.onload = () => {
-        try {
-          const data = JSON.parse(rd.result);
-          if (data && Array.isArray(data.courses)) { state = data; if (!state.categories) state.categories = [...DEFAULT_CATS]; ensureUI(); state.courses.forEach(ensureFields); if (!state.active && state.courses[0]) state.active = state.courses[0].id; if (state.theme) applyTheme(state.theme); persist(); render(); }
-          else showModal({ title: 'Archivo no válido', msg: 'El archivo no tiene el formato correcto de Gradiant.', confirmText: 'Entendido', showCancel: false });
-        } catch { showModal({ title: 'Error al importar', msg: 'No se pudo leer el archivo. Asegúrate de que sea un JSON exportado desde Gradiant.', confirmText: 'Entendido', showCancel: false }); }
-      };
-      rd.readAsText(f); e.target.value = '';
-    };
 
     /* ── Modal genérico ── */
     let _modalCb = null;
@@ -3001,6 +3027,35 @@
       });
     }
 
+    /* ── Auth UI ── */
+    function renderAuthArea(user) {
+      const area = document.getElementById('authArea');
+      if (!area) return;
+      if (user) {
+        const initials = (user.displayName || user.email || '?')
+          .split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const avatar = user.photoURL
+          ? `<img class="auth-avatar" src="${escA(user.photoURL)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'auth-avatar auth-initials',textContent:'${initials}'}))">`
+          : `<span class="auth-avatar auth-initials">${initials}</span>`;
+        area.innerHTML = `
+          <div class="auth-user">
+            ${avatar}
+            <span class="auth-name">${esc(user.displayName || user.email || '')}</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btnSignOut">Salir</button>`;
+        document.getElementById('btnSignOut').addEventListener('click', () => {
+          signOut(fbAuth).catch(e => console.error('[Gradiant] signOut error', e));
+        });
+      } else {
+        area.innerHTML =
+          `<button class="btn btn-ghost btn-sm" id="btnSignIn">Entrar con Google</button>`;
+        document.getElementById('btnSignIn').addEventListener('click', () => {
+          signInWithPopup(fbAuth, new GoogleAuthProvider())
+            .catch(e => console.error('[Gradiant] signIn error', e));
+        });
+      }
+    }
+
     /* ── Tema ── */
     document.getElementById('btnTheme').onclick = () => {
       state.theme = state.theme === 'dark' ? 'light' : 'dark';
@@ -3025,6 +3080,13 @@
       applyTheme(state.theme || 'dark');
       render();
     })();
+
+    /* Arrancar listener de auth (después del render inicial para no bloquear la UI) */
+    if (fbAuth) {
+      onAuthStateChanged(fbAuth, renderAuthArea);
+    } else {
+      renderAuthArea(null);
+    }
   </script>
 </body>
 

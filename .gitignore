@@ -19,6 +19,7 @@ build/
 
 # Claude Code
 .claude/
+CLAUDE.md
 claudehub-lock.json
 package.json
 package-lock.json
