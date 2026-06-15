@@ -1,0 +1,18 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Node / build (por si más adelante usas un bundler o Claude Code)
+node_modules/
+dist/
+build/
+*.log
+
+# Entorno
+.env
+.env.local
