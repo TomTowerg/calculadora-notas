@@ -163,6 +163,13 @@
       gap: 6px;
     }
 
+    /* Mobile-only elements: hidden on desktop */
+    .m-hdr-left,
+    .m-hdr-right,
+    .m-page-title {
+      display: none;
+    }
+
     /* ── Auth area ── */
     #authArea {
       display: flex;
@@ -171,8 +178,15 @@
     }
 
     @keyframes auth-in {
-      from { opacity: 0; transform: translateX(10px) scale(.93); }
-      to   { opacity: 1; transform: none; }
+      from {
+        opacity: 0;
+        transform: translateX(10px) scale(.93);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
     }
 
     .auth-chip {
@@ -183,7 +197,7 @@
       border-radius: 30px;
       border: 1px solid var(--border);
       background: var(--surface-2);
-      animation: auth-in .3s cubic-bezier(.34,1.56,.64,1);
+      animation: auth-in .3s cubic-bezier(.34, 1.56, .64, 1);
       transition: border-color .15s, background .15s;
     }
 
@@ -255,7 +269,7 @@
       outline: none;
       cursor: pointer;
       color: #222;
-      animation: auth-in .3s cubic-bezier(.34,1.56,.64,1);
+      animation: auth-in .3s cubic-bezier(.34, 1.56, .64, 1);
     }
 
     .gbtn-svg {
@@ -518,6 +532,11 @@
         opacity: .4;
         transform: scale(.7);
       }
+    }
+
+    /* ─── MOBILE WELCOME (oculto en desktop) ─── */
+    .mobile-welcome {
+      display: none
     }
 
     /* ─── TABS ─── */
@@ -1410,6 +1429,53 @@
       color: var(--muted)
     }
 
+    .gh-header {
+      display: none;
+      /* visible solo en mobile */
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    /* En desktop el .gh-label va dentro de .gh-grade-info (como antes); en mobile va en .gh-header */
+    .gh-grade-info::before {
+      content: 'Promedio actual';
+      display: block;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .gh-exem-badge {
+      display: none;
+      /* solo visible en mobile (media query activa display:inline-flex) */
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: .02em;
+    }
+
+    .gh-exem-badge.ok {
+      background: rgba(74, 222, 128, .15);
+      color: var(--good);
+    }
+
+    .gh-exem-badge.no {
+      background: rgba(248, 113, 113, .15);
+      color: var(--bad);
+    }
+
+    .gh-exem-badge.warn {
+      background: rgba(251, 146, 60, .15);
+      color: var(--warn);
+    }
+
     /* ─── BANNER ─── */
     .banner {
       border-radius: var(--r2);
@@ -2248,6 +2314,326 @@
       line-height: 1.6
     }
 
+    /* ─── MOBILE BOTTOM NAV ─── */
+    .mnav {
+      display: none
+    }
+
+    .mnav-sheet-overlay {
+      display: none
+    }
+
+    @media (max-width: 600px) {
+
+      /* Ocultar auth chip en topbar — perfil está en el nav */
+      #authArea {
+        display: none
+      }
+
+      /* Pill flotante — dimensiones fluidas para cualquier tamaño de celular */
+      .mnav {
+        display: flex;
+        position: fixed;
+        bottom: calc(clamp(12px, 3.5vw, 22px) + env(safe-area-inset-bottom));
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - clamp(28px, 7vw, 52px));
+        max-width: 420px;
+        height: clamp(56px, 14vw, 66px);
+        border-radius: clamp(28px, 7vw, 33px);
+        background: rgba(12, 14, 20, 0.86);
+        backdrop-filter: blur(24px) saturate(1.8);
+        -webkit-backdrop-filter: blur(24px) saturate(1.8);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .07);
+        z-index: 200;
+        align-items: center;
+        padding: clamp(4px, 1vw, 7px) clamp(4px, 1.5vw, 9px);
+        gap: clamp(2px, 0.8vw, 5px);
+      }
+
+      [data-theme="light"] .mnav {
+        background: rgba(255, 255, 255, .9);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, .14), inset 0 1px 0 rgba(0, 0, 0, .04);
+      }
+
+      .mnav-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: clamp(46px, 11vw, 54px);
+        border: none;
+        background: transparent;
+        border-radius: clamp(22px, 5.5vw, 27px);
+        cursor: pointer;
+        color: rgba(255, 255, 255, .4);
+        transition: color .2s, background .2s;
+        padding: 0;
+      }
+
+      [data-theme="light"] .mnav-btn {
+        color: var(--muted);
+      }
+
+      .mnav-btn.active {
+        background: rgba(255, 255, 255, .13);
+        color: #fff;
+      }
+
+      [data-theme="light"] .mnav-btn.active {
+        background: var(--accent-s);
+        color: var(--accent);
+      }
+
+      .mnav-btn svg {
+        transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+      }
+
+      .mnav-btn.active svg {
+        transform: scale(1.1);
+      }
+
+      /* Avatar del perfil en el nav */
+      .mnav-avatar {
+        width: clamp(26px, 7.5vw, 34px);
+        height: clamp(26px, 7.5vw, 34px);
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid transparent;
+        transition: border-color .2s;
+        flex-shrink: 0;
+      }
+
+      .mnav-btn.active .mnav-avatar {
+        border-color: rgba(255, 255, 255, .7);
+      }
+
+      [data-theme="light"] .mnav-btn.active .mnav-avatar {
+        border-color: var(--accent);
+      }
+
+      .mnav-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+
+      /* Bottom sheet overlay */
+      .mnav-sheet-overlay {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0);
+        z-index: 250;
+        pointer-events: none;
+        transition: background .3s;
+      }
+
+      .mnav-sheet-overlay.open {
+        background: rgba(0, 0, 0, .5);
+        pointer-events: all;
+      }
+
+      .mnav-sheet {
+        background: var(--surface);
+        border-radius: clamp(18px, 4.5vw, 24px) clamp(18px, 4.5vw, 24px) 0 0;
+        padding-bottom: calc(clamp(12px, 3vw, 20px) + env(safe-area-inset-bottom));
+        transform: translateY(100%);
+        transition: transform .38s cubic-bezier(.32, .72, 0, 1);
+        max-height: min(82dvh, 82vh);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .mnav-sheet-overlay.open .mnav-sheet {
+        transform: translateY(0);
+      }
+
+      .bs-handle {
+        width: 36px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-2);
+        margin: clamp(10px, 2.5vw, 14px) auto 0;
+      }
+
+      /* Header del sheet con logo */
+      .bs-header {
+        display: flex;
+        align-items: center;
+        gap: clamp(8px, 2.5vw, 12px);
+        padding: clamp(12px, 3.5vw, 16px) clamp(16px, 5vw, 22px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .bs-logo {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        filter: drop-shadow(0 1px 4px rgba(15, 22, 35, .25));
+      }
+
+      .bs-brand {
+        font-size: clamp(14px, 4.2vw, 17px);
+        font-weight: 800;
+        letter-spacing: -.04em;
+        color: var(--ink);
+        flex: 1;
+      }
+
+      /* Lista de ramos en sheet */
+      .bs-course-item {
+        display: flex;
+        align-items: center;
+        gap: clamp(10px, 3vw, 14px);
+        padding: clamp(13px, 3.8vw, 16px) clamp(16px, 5vw, 22px);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        transition: background .1s;
+      }
+
+      .bs-course-item:active {
+        background: var(--surface-2)
+      }
+
+      .bs-course-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .bs-course-name {
+        flex: 1;
+        font-size: clamp(13px, 3.8vw, 15px);
+        font-weight: 500;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .bs-course-item.bs-active .bs-course-name {
+        font-weight: 700;
+        color: var(--accent);
+      }
+
+      .bs-course-grade {
+        font-size: clamp(11px, 3.2vw, 13px);
+        font-weight: 600;
+        color: var(--ink-2);
+        flex-shrink: 0;
+      }
+
+      .bs-add-btn {
+        display: flex;
+        align-items: center;
+        gap: clamp(8px, 2.5vw, 12px);
+        padding: clamp(14px, 4vw, 18px) clamp(16px, 5vw, 22px);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        width: 100%;
+        font: 600 clamp(13px, 3.5vw, 15px)/1 var(--font);
+        color: var(--accent);
+        border-top: 1px solid var(--border);
+      }
+
+      /* Sheet de perfil */
+      .bs-profile-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: clamp(4px, 1.5vw, 8px);
+        padding: clamp(20px, 5.5vw, 28px) clamp(16px, 5vw, 24px) clamp(6px, 2vw, 10px);
+      }
+
+      .bs-p-avatar {
+        width: clamp(60px, 17vw, 80px);
+        height: clamp(60px, 17vw, 80px);
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        margin-bottom: clamp(6px, 2vw, 10px);
+      }
+
+      .bs-p-initials {
+        width: clamp(60px, 17vw, 80px);
+        height: clamp(60px, 17vw, 80px);
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        font-size: clamp(20px, 6vw, 28px);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: clamp(6px, 2vw, 10px);
+      }
+
+      .bs-p-name {
+        font-size: clamp(16px, 4.5vw, 20px);
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: -.02em;
+        text-align: center;
+      }
+
+      .bs-p-email {
+        font-size: clamp(11px, 3vw, 13px);
+        color: var(--ink-2);
+        text-align: center;
+      }
+
+      .bs-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: clamp(13px, 3.8vw, 16px) clamp(16px, 5vw, 22px);
+        border-top: 1px solid var(--border);
+        font: 500 clamp(13px, 3.5vw, 15px)/1 var(--font);
+        color: var(--ink);
+        cursor: pointer;
+        background: transparent;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        gap: clamp(8px, 2.5vw, 12px);
+      }
+
+      .bs-row-red {
+        color: #ef4444;
+      }
+
+      /* Contenido según sección activa */
+      body[data-mnav="ramos"] .col-right {
+        display: none !important
+      }
+
+      body[data-mnav="resumen"] .col-left {
+        display: none !important
+      }
+
+      body[data-mnav="resumen"] .course-header {
+        display: none
+      }
+
+      /* Padding para la pill flotante — fluido según dispositivo */
+      .main {
+        padding-bottom: calc(clamp(86px, 16vw, 110px) + env(safe-area-inset-bottom)) !important
+      }
+    }
+
     /* ─── RESPONSIVE ─── */
     @media (max-width: 860px) {
       .content-grid {
@@ -2255,7 +2641,7 @@
       }
 
       .main {
-        padding: 16px 14px 60px
+        padding: clamp(12px, 2vw, 16px) clamp(12px, 2vw, 14px) 60px
       }
 
       .nf-scenarios {
@@ -2263,19 +2649,1202 @@
       }
     }
 
-    @media (max-width: 520px) {
-      .course-name-input {
-        font-size: 20px
+    @media (max-width: 600px) {
+
+      /* Topbar: ocultar syncStatus text, mantener solo el punto */
+      #syncStatus .sync-label {
+        display: none
       }
 
+      #syncStatus {
+        padding: 4px 6px;
+        gap: 0
+      }
+
+      /* Topbar: padding fluido */
+      .topbar {
+        padding: 0 clamp(12px, 4vw, 22px)
+      }
+
+      /* Auth chip: solo avatar + botón salir, sin nombre */
+      .auth-chip-name {
+        display: none
+      }
+
+      /* Tabs: ocultos en mobile — reemplazados por la course bar */
+      .tabs-bar {
+        display: none !important
+      }
+
+      /* ── Welcome header (solo en vista ramos) ── */
+      body[data-mnav="ramos"] .mobile-welcome {
+        display: block;
+        padding: clamp(16px, 4.5vw, 22px) clamp(16px, 4.5vw, 22px) 0;
+      }
+
+      .mw-greeting {
+        font-size: clamp(22px, 6.5vw, 28px);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        color: var(--ink);
+        line-height: 1.1;
+      }
+
+      .mw-stats {
+        font-size: clamp(12px, 3.2vw, 14px);
+        color: var(--ink-2);
+        margin-top: 3px;
+      }
+
+      /* Tab-x siempre visible en mobile (no depende de hover) */
+      .tab-x {
+        opacity: 1 !important;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px
+      }
+
+      /* Tabla de evaluaciones: reflow a 2 filas por evaluación */
+      #mainPanel table {
+        display: block;
+        width: 100%
+      }
+
+      #mainPanel thead {
+        display: none
+      }
+
+      #mainPanel tbody {
+        display: block
+      }
+
+      #mainPanel tfoot {
+        display: block
+      }
+
+      #mainPanel tbody tr {
+        display: grid;
+        grid-template-columns: 24px 1fr auto auto;
+        grid-template-rows: auto auto;
+        gap: 5px 8px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+      }
+
+      /* Columna 1: drag handle — ocupa las 2 filas */
+      #mainPanel tbody tr td:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1 / 3;
+        align-self: center;
+      }
+
+      /* Columna 2: nombre — fila 1 */
+      #mainPanel tbody tr td:nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      /* Columna 3: categoría — fila 2, texto chico */
+      #mainPanel tbody tr td:nth-child(3) {
+        grid-column: 2;
+        grid-row: 2;
+        font-size: 11px;
+        color: var(--ink-2);
+      }
+
+      /* Columna 4: ponderación — fila 1, derecha */
+      #mainPanel tbody tr td:nth-child(4) {
+        grid-column: 3;
+        grid-row: 1;
+        width: auto;
+      }
+
+      /* Columna 5: nota — fila 2, derecha */
+      #mainPanel tbody tr td:nth-child(5) {
+        grid-column: 3;
+        grid-row: 2;
+        width: auto;
+      }
+
+      /* Columna 6: botón borrar — ocupa las 2 filas */
+      #mainPanel tbody tr td:nth-child(6) {
+        grid-column: 4;
+        grid-row: 1 / 3;
+        align-self: center;
+      }
+
+      /* Inputs numéricos en tabla: tamaño táctil, fluido */
+      #mainPanel tbody .num-inp {
+        width: clamp(50px, 14vw, 65px);
+        height: clamp(34px, 8vw, 40px);
+        font-size: clamp(12px, 3.5vw, 14px)
+      }
+
+      /* Botón borrar fila: área táctil mínima */
+      #mainPanel tbody .btn-danger {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 0;
+        display: grid;
+        place-items: center
+      }
+
+      /* tfoot: botón agregar en bloque */
+      #mainPanel tfoot td {
+        display: block;
+        padding: 10px 0 4px
+      }
+
+      /* Título del ramo y nota grande: fluidos */
+      .course-name-input {
+        font-size: clamp(18px, 5.5vw, 26px)
+      }
+
+      .gh-grade {
+        font-size: clamp(36px, 11vw, 54px)
+      }
+    }
+
+    @media (max-width: 400px) {
+
+      /* Celulares muy pequeños (≤400px): ocultar etiquetas de botones */
       .btn-label {
         display: none
       }
 
-      .gh-grade {
-        font-size: 42px
+      .topbar {
+        padding: 0 clamp(10px, 3vw, 14px)
+      }
+
+      .main {
+        padding-left: 10px !important;
+        padding-right: 10px !important
       }
     }
+
+    /* ─── POPUP LIQUID GLASS DE RAMOS (mobile) ─── */
+    .ramos-popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .5);
+      backdrop-filter: blur(14px) saturate(1.6);
+      -webkit-backdrop-filter: blur(14px) saturate(1.6);
+      z-index: 350;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(20px, 6vw, 32px);
+      opacity: 0;
+      transition: opacity .22s;
+    }
+
+    .ramos-popup-overlay.open {
+      opacity: 1;
+    }
+
+    .ramos-popup-box {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 28px;
+      background: rgba(24, 28, 44, 0.72);
+      border: 1px solid rgba(255, 255, 255, .18);
+      backdrop-filter: blur(48px) saturate(2.4);
+      -webkit-backdrop-filter: blur(48px) saturate(2.4);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .25);
+      overflow: hidden;
+      transform: scale(.86);
+      transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    .ramos-popup-overlay.open .ramos-popup-box {
+      transform: scale(1)
+    }
+
+    [data-theme="light"] .ramos-popup-box {
+      background: rgba(255, 255, 255, .8);
+      border-color: rgba(255, 255, 255, .9);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255, 255, 255, 1);
+    }
+
+    .ramos-popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, .12);
+    }
+
+    [data-theme="light"] .ramos-popup-header {
+      border-bottom-color: rgba(0, 0, 0, .08)
+    }
+
+    .ramos-popup-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      color: rgba(255, 255, 255, .95);
+    }
+
+    [data-theme="light"] .ramos-popup-title {
+      color: var(--ink)
+    }
+
+    .ramos-popup-close {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, .14);
+      color: rgba(255, 255, 255, .75);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background .15s;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    [data-theme="light"] .ramos-popup-close {
+      background: rgba(0, 0, 0, .07);
+      color: var(--ink-2)
+    }
+
+    .ramos-popup-close:hover {
+      background: rgba(255, 255, 255, .24)
+    }
+
+    [data-theme="light"] .ramos-popup-close:hover {
+      background: rgba(0, 0, 0, .13)
+    }
+
+    .ramos-popup-list {
+      max-height: clamp(200px, 52vh, 420px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .ramos-popup-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      transition: background .12s;
+    }
+
+    .ramos-popup-item:active {
+      background: rgba(255, 255, 255, .07)
+    }
+
+    [data-theme="light"] .ramos-popup-item:active {
+      background: rgba(0, 0, 0, .05)
+    }
+
+    .rp-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .rp-name {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .92);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    [data-theme="light"] .rp-name {
+      color: var(--ink)
+    }
+
+    .ramos-popup-item.rp-active .rp-name {
+      color: #a5b4fc
+    }
+
+    [data-theme="light"] .ramos-popup-item.rp-active .rp-name {
+      color: var(--accent)
+    }
+
+    .rp-grade {
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, .55);
+      flex-shrink: 0
+    }
+
+    [data-theme="light"] .rp-grade {
+      color: var(--ink-2)
+    }
+
+    .ramos-popup-footer {
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      padding: 4px 0 4px
+    }
+
+    [data-theme="light"] .ramos-popup-footer {
+      border-top-color: rgba(0, 0, 0, .07)
+    }
+
+    .ramos-popup-add {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: 100%;
+      font: 600 14px/1 var(--font);
+      color: #a5b4fc;
+      transition: background .12s;
+    }
+
+    [data-theme="light"] .ramos-popup-add {
+      color: var(--accent)
+    }
+
+    .ramos-popup-add:active {
+      background: rgba(255, 255, 255, .07)
+    }
+
+    [data-theme="light"] .ramos-popup-add:active {
+      background: rgba(0, 0, 0, .05)
+    }
+
+    /* ─── BOTONES DE ACCESO RÁPIDO (config / eximición) — solo mobile ─── */
+    .mobile-course-actions {
+      display: none
+    }
+
+    @media (max-width: 600px) {
+      .mobile-course-actions {
+        display: flex;
+        gap: 8px;
+        padding: clamp(8px, 2.5vw, 12px) 0 0;
+        flex-wrap: wrap;
+      }
+
+      .mca-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: clamp(4px, 1.5vw, 7px);
+        padding: clamp(7px, 2vw, 10px) clamp(10px, 3vw, 14px);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: clamp(9px, 2.5vw, 12px);
+        font: 600 clamp(12px, 3.2vw, 13px)/1 var(--font);
+        color: var(--ink-2);
+        cursor: pointer;
+        transition: background .15s, color .15s;
+      }
+
+      .mca-btn:active {
+        background: var(--surface-2);
+        color: var(--ink)
+      }
+    }
+
+    /* ─── MOBILE SETTINGS/EXEM SHEET — estilos específicos ─── */
+    .msh-section {
+      padding: clamp(14px, 3.5vw, 18px) clamp(16px, 5vw, 22px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .msh-section:last-child {
+      border-bottom: none
+    }
+
+    .msh-label {
+      font-size: clamp(11px, 3vw, 12px);
+      font-weight: 600;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .msh-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .msh-row:last-child {
+      margin-bottom: 0
+    }
+
+    .msh-row label {
+      font-size: clamp(13px, 3.5vw, 14px);
+      color: var(--ink);
+      flex: 1
+    }
+
+    .msh-inp {
+      width: clamp(70px, 20vw, 90px);
+      height: 38px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--ink);
+      font: 600 14px/1 var(--font);
+      flex-shrink: 0;
+    }
+
+    .msh-select {
+      flex-shrink: 0;
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--ink);
+      font: 14px var(--font);
+      padding: 0 8px;
+    }
+
+    .msh-rule-card {
+      background: var(--surface-2);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    .msh-cond-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .msh-cond-row:first-of-type {
+      border-top: none;
+      padding-top: 0
+    }
+
+    .or-badge {
+      text-align: center;
+      padding: 4px 0 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-2);
+      letter-spacing: .06em;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       REDISEÑO VISUAL MOBILE — solo ≤ 600 px
+       Todo lo siguiente aplica SOLO a mobile.
+       El desktop no se toca.
+    ═══════════════════════════════════════════════════════ */
+    @media (max-width: 600px) {
+
+      /* El saludo ahora va en el topbar — ocultar el welcome duplicado */
+      .mobile-welcome {
+        display: none !important;
+      }
+
+      /* ── Colores más profundos en dark mode ── */
+      :root {
+        --bg: #0d0f1c;
+        --bg-2: #111422;
+        --surface: #14172a;
+        --surface-2: #1a1d2e;
+        --border: rgba(255, 255, 255, .07);
+        --border-2: rgba(255, 255, 255, .13);
+      }
+
+      /* ── Topbar: ocultar elementos desktop, mostrar mobile ── */
+      .topbar .brand,
+      .topbar .topbar-gap,
+      .topbar .topbar-right {
+        display: none !important;
+      }
+
+      .topbar {
+        height: auto;
+        padding: clamp(10px, 3vw, 14px) clamp(14px, 4.5vw, 20px);
+        min-height: 56px;
+      }
+
+      .m-hdr-left {
+        display: flex;
+        align-items: center;
+        gap: clamp(9px, 2.5vw, 12px);
+        flex: 1;
+        min-width: 0;
+      }
+
+      .m-hdr-right {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        margin-left: 12px;
+      }
+
+      .m-hdr-avatar {
+        width: clamp(34px, 9vw, 40px);
+        height: clamp(34px, 9vw, 40px);
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: #fff;
+      }
+
+      .m-hdr-text {
+        min-width: 0;
+      }
+
+      .m-hdr-greeting {
+        font-size: clamp(15px, 4.2vw, 18px);
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -.025em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .m-hdr-sub {
+        font-size: clamp(11px, 2.8vw, 12px);
+        color: var(--muted);
+        margin-top: 1px;
+      }
+
+      .m-hdr-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: clamp(11px, 2.8vw, 12px);
+        font-weight: 700;
+        padding: 6px clamp(10px, 3vw, 14px);
+        border-radius: 20px;
+        letter-spacing: .01em;
+        white-space: nowrap;
+        transition: background .3s, color .3s;
+      }
+
+      .m-hdr-badge.ok {
+        background: rgba(74, 222, 128, .15);
+        color: var(--good);
+      }
+
+      .m-hdr-badge.saving {
+        background: rgba(255, 255, 255, .09);
+        color: var(--muted);
+      }
+
+      .m-hdr-badge.offline {
+        background: rgba(251, 146, 60, .12);
+        color: var(--warn);
+      }
+
+      .m-hdr-badge.local {
+        background: rgba(255, 255, 255, .06);
+        color: var(--muted);
+      }
+
+      /* ── Nav: pill activo con etiqueta ── */
+      .mnav-label {
+        display: none;
+        font-size: clamp(12px, 3.2vw, 13px);
+        font-weight: 700;
+        letter-spacing: -.01em;
+        line-height: 1;
+      }
+
+      .mnav-btn.active .mnav-label {
+        display: inline;
+      }
+
+      .mnav-btn {
+        flex: 1;
+        transition: background .2s, flex .2s cubic-bezier(.4, 0, .2, 1), min-width .2s cubic-bezier(.4, 0, .2, 1);
+      }
+
+      .mnav-btn.active {
+        flex: 0 0 auto;
+        min-width: clamp(96px, 28vw, 118px);
+        gap: clamp(5px, 1.5vw, 7px);
+        background: #5b52f5 !important;
+        color: #fff !important;
+      }
+
+      [data-theme="light"] .mnav-btn.active {
+        background: #6366f1 !important;
+        color: #fff !important;
+      }
+
+      /* ── Grade Hero (NP card) — gradiente con color del ramo ── */
+      .grade-hero {
+        border-radius: clamp(18px, 5vw, 24px);
+        padding: clamp(16px, 4.5vw, 22px);
+        margin-bottom: clamp(14px, 4vw, 20px);
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--tc, #6366f1) 22%, transparent) 0%,
+            transparent 100%) !important;
+        border-color: color-mix(in srgb, var(--tc, #6366f1) 25%, transparent) !important;
+        box-shadow: none !important;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Burbuja decorativa — igual al diseño Figma */
+      .grade-hero::before {
+        content: '';
+        position: absolute;
+        right: -20px;
+        top: -20px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--tc, #6366f1) 10%, transparent);
+        pointer-events: none;
+      }
+
+      .gh-header {
+        display: flex;
+        margin-bottom: clamp(8px, 2.5vw, 12px);
+      }
+
+      .gh-label {
+        font-size: clamp(10px, 2.6vw, 11px);
+        letter-spacing: .10em;
+        color: rgba(200, 200, 230, 0.55);
+      }
+
+      .gh-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        margin-bottom: 12px;
+      }
+
+      .gh-grade {
+        font-size: clamp(44px, 13vw, 56px);
+        text-shadow: none !important;
+      }
+
+      .gh-grade-info {
+        padding-bottom: 0;
+      }
+
+      .gh-sub {
+        color: rgba(200, 200, 230, 0.5);
+        font-size: clamp(11px, 3vw, 12px);
+      }
+
+      /* Progress bar: usa el color del ramo en el frente, bg muy sutil */
+      .gh-bar-track {
+        background: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: none !important;
+        height: 6px;
+      }
+
+      /* El "cover" (parte no evaluada) ahora es transparente;
+         el color activo viene de un pseudo-elemento posicionado antes del cover */
+      .gh-bar-track::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(90deg, var(--tc, #6366f1), var(--good));
+        border-radius: 4px;
+        z-index: 0;
+      }
+
+      .gh-bar-cover {
+        background: rgba(13, 13, 26, 0.85) !important;
+        z-index: 1;
+        position: absolute;
+        border-radius: 0 4px 4px 0;
+      }
+
+      [data-theme="light"] .gh-bar-cover {
+        background: rgba(248, 250, 252, 0.85) !important;
+      }
+
+      .gh-bar-footer {
+        margin-top: 6px;
+      }
+
+      .gh-bar-scale,
+      .gh-meta {
+        color: rgba(200, 200, 230, 0.35);
+        font-size: 10px;
+      }
+
+      .gh-grade-info::before {
+        display: none;
+      }
+
+      .gh-exem-badge {
+        display: inline-flex;
+      }
+
+      /* ── Eval items como cards ──
+         Grid 4 col:
+         row1: nombre (1/-1)
+         row2: cat(1) | peso(2) | nota(3) | del(4)
+      */
+      table:has(#evBody) {
+        display: block;
+        width: 100%;
+      }
+
+      #evBody {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      /* Forzar block para que los td salgan del modo table-cell */
+      #evBody tr>td {
+        display: block;
+      }
+
+      #evBody tr {
+        display: grid;
+        grid-template-columns: 1fr auto auto 28px;
+        grid-template-rows: auto auto;
+        column-gap: clamp(6px, 2vw, 10px);
+        row-gap: 0;
+        background: var(--surface);
+        border-radius: 14px;
+        padding: clamp(12px, 3.5vw, 14px) clamp(12px, 3.5vw, 14px);
+        border: 1px solid var(--border);
+      }
+
+      /* td1: grip → oculto */
+      #evBody tr td.ev-grip {
+        display: none;
+      }
+
+      /* td2: nombre → row1, todas las cols */
+      #evBody tr td.ev-name {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        display: flex;
+        align-items: center;
+        padding-bottom: clamp(6px, 1.8vw, 8px);
+        border-bottom: 1px solid var(--border);
+        margin-bottom: clamp(6px, 1.8vw, 8px);
+      }
+
+      #evBody tr td.ev-name input {
+        background: transparent;
+        border: none;
+        font-size: clamp(14px, 3.8vw, 16px);
+        font-weight: 700;
+        color: var(--ink);
+        padding: 0;
+        height: auto;
+        width: 100%;
+        outline: none;
+      }
+
+      #evBody tr td.ev-name input::placeholder {
+        color: var(--muted);
+      }
+
+      /* td3: categoría → row2, col1 */
+      #evBody tr td:nth-child(3) {
+        grid-column: 1;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+      }
+
+      #evBody tr td:nth-child(3) select {
+        appearance: none;
+        -webkit-appearance: none;
+        background: color-mix(in srgb, var(--tc, #6366f1) 18%, transparent);
+        color: color-mix(in srgb, var(--tc, #6366f1) 100%, #fff 20%);
+        border: none;
+        padding: 3px 10px 3px 8px;
+        border-radius: 20px;
+        font-size: clamp(11px, 3vw, 12px);
+        font-weight: 700;
+        cursor: pointer;
+        max-width: 140px;
+        height: auto;
+        outline: none;
+      }
+
+      [data-theme="light"] #evBody tr td:nth-child(3) select {
+        background: color-mix(in srgb, var(--tc, #6366f1) 13%, transparent);
+        color: var(--tc, #6366f1);
+      }
+
+      /* td4: peso → row2, col2 */
+      #evBody tr td:nth-child(4) {
+        grid-column: 2;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+      }
+
+      #evBody tr td:nth-child(4) .autow {
+        font-size: clamp(11px, 3vw, 12px);
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      /* Peso manual: sin borde, aspecto de texto muted */
+      #evBody tr td:nth-child(4) input.num-inp {
+        appearance: textfield;
+        -moz-appearance: textfield;
+        background: transparent;
+        border: none !important;
+        box-shadow: none !important;
+        font-size: clamp(11px, 3vw, 12px);
+        font-weight: 600;
+        color: var(--muted);
+        width: clamp(28px, 8vw, 36px);
+        height: auto;
+        padding: 0;
+        text-align: left;
+        outline: none;
+      }
+
+      /* td5: nota → row2, col3 — grande y coloreada */
+      #evBody tr td.ev-nota {
+        grid-column: 3;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      #evBody tr td.ev-nota input.num-inp {
+        appearance: textfield;
+        -moz-appearance: textfield;
+        background: transparent;
+        border: none;
+        font-size: clamp(26px, 7.5vw, 32px);
+        font-weight: 800;
+        letter-spacing: -.04em;
+        width: clamp(58px, 16vw, 70px);
+        height: auto;
+        padding: 0;
+        text-align: right;
+        color: var(--ink-2);
+        outline: none;
+        font-variant-numeric: tabular-nums;
+      }
+
+      #evBody tr td.ev-nota input.num-inp:focus {
+        color: var(--ink);
+      }
+
+      /* Colores en mobile: solo texto, sin fondo */
+      #evBody tr td.ev-nota input.num-inp.g-ok {
+        color: var(--good) !important;
+        background: transparent !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+      }
+
+      #evBody tr td.ev-nota input.num-inp.g-warn {
+        color: var(--warn) !important;
+        background: transparent !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+      }
+
+      #evBody tr td.ev-nota input.num-inp.g-no {
+        color: var(--bad) !important;
+        background: transparent !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+      }
+
+      /* td6: eliminar → row2, col4 (esquina inferior derecha, sutil) */
+      #evBody tr td:nth-child(6) {
+        grid-column: 4;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #evBody tr td:nth-child(6) button {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: .4;
+      }
+
+      #evBody tr:active {
+        background: var(--surface-2);
+      }
+
+      /* Ocultar bordes de td heredados del desktop en mobile */
+      #evBody td {
+        border-bottom: none !important;
+      }
+
+      /* Ocultar thead (las columnas no se necesitan en card layout) */
+      table thead {
+        display: none;
+      }
+
+      /* tfoot: quitar su aspecto de tabla */
+      table tfoot tr,
+      table tfoot td {
+        display: block;
+        border: none;
+        padding: 0;
+        background: transparent;
+      }
+
+      /* ── Botón agregar evaluación ── */
+      #addEv {
+        width: 100%;
+        margin-top: 8px;
+        padding: clamp(12px, 3.5vw, 15px);
+        border: 1.5px dashed var(--border-2);
+        border-radius: 14px;
+        background: transparent;
+        color: var(--muted);
+        font-size: clamp(13px, 3.5vw, 14px);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        cursor: pointer;
+        transition: border-color .2s, color .2s;
+      }
+
+      #addEv:active {
+        border-color: var(--tc, #6366f1);
+        color: var(--tc, #6366f1);
+      }
+
+      /* Nota vacía → pill redondeado (no input en blanco) */
+      #evBody tr td.ev-nota input.num-inp:placeholder-shown {
+        font-size: clamp(12px, 3.2vw, 13px) !important;
+        font-weight: 500 !important;
+        width: auto !important;
+        min-width: 36px !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 20px !important;
+        padding: 5px 12px !important;
+        color: rgba(200, 200, 230, 0.35) !important;
+        text-align: center !important;
+        letter-spacing: 0 !important;
+        appearance: none;
+      }
+
+      /* ── Título de página en mobile ── */
+      .m-page-title {
+        display: none;
+      }
+
+      body[data-mnav="ramos"] .m-page-title,
+      body[data-mnav="resumen"] .m-page-title {
+        display: block;
+        padding: clamp(14px, 4vw, 18px) clamp(16px, 4.5vw, 20px) clamp(8px, 2vw, 10px);
+        font-size: clamp(22px, 6.5vw, 26px);
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -.035em;
+        line-height: 1;
+      }
+
+      /* ── Banner: oculto en mobile (la info la da el badge en el NP card) ── */
+      .banner {
+        display: none;
+      }
+
+      /* ── Block y block-title en mobile ── */
+      .block {
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin-bottom: clamp(20px, 5vw, 28px);
+      }
+
+      .block-title {
+        font-size: clamp(10px, 2.8vw, 11px);
+        letter-spacing: .09em;
+        margin-bottom: clamp(10px, 3vw, 14px);
+        padding: 0;
+      }
+
+      /* ── Nota final (fórmula) ── */
+      .nf-formula {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: clamp(14px, 4vw, 18px);
+        gap: clamp(10px, 3vw, 14px);
+      }
+
+      .nf-term {
+        gap: 3px;
+      }
+
+      .nf-val {
+        font-size: clamp(24px, 6.5vw, 28px);
+      }
+
+      .nf-lbl {
+        font-size: clamp(10px, 2.7vw, 11px);
+      }
+
+      .nf-scenarios {
+        margin-top: clamp(10px, 3vw, 14px);
+        gap: 8px;
+      }
+
+      .nf-scenario {
+        padding: clamp(10px, 3vw, 13px) clamp(12px, 3.5vw, 15px);
+        border-radius: 12px;
+      }
+
+      .nf-scen-val {
+        font-size: clamp(20px, 5.5vw, 24px);
+      }
+
+      /* ── Resumen mobile ── */
+      .sem-cards {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .sem-card {
+        border-radius: 16px;
+        padding: clamp(14px, 4vw, 18px);
+      }
+
+      .sem-card-val {
+        font-size: clamp(32px, 9vw, 40px);
+      }
+
+      /* ── Mobile topbar: light mode override ── */
+      [data-theme="light"] .m-hdr-badge.ok {
+        background: rgba(22, 163, 74, .12);
+        color: #16a34a;
+      }
+
+      [data-theme="light"] .m-hdr-badge.local,
+      [data-theme="light"] .m-hdr-badge.saving {
+        background: rgba(0, 0, 0, .06);
+        color: var(--muted);
+      }
+
+      /* ── Light mode: override de colores dark-específicos ── */
+      [data-theme="light"] {
+        --bg: #f1f5f9;
+        --bg-2: #e8edf5;
+        --surface: #ffffff;
+        --surface-2: #f8fafc;
+        --border: rgba(0, 0, 0, .07);
+        --border-2: rgba(0, 0, 0, .12);
+      }
+
+      [data-theme="light"] .grade-hero::before {
+        background: color-mix(in srgb, var(--tc, #6366f1) 8%, transparent);
+      }
+
+      [data-theme="light"] #evBody tr {
+        background: var(--surface);
+        border-color: rgba(0, 0, 0, .07);
+      }
+
+      [data-theme="light"] #evBody tr td.ev-name input {
+        color: #1e293b;
+      }
+
+      [data-theme="light"] #evBody tr td.ev-nota input.num-inp:placeholder-shown {
+        background: rgba(0, 0, 0, .04) !important;
+        border-color: rgba(0, 0, 0, .07) !important;
+        color: rgba(30, 41, 59, .35) !important;
+      }
+
+      [data-theme="light"] .gh-bar-track {
+        background: rgba(0, 0, 0, .07) !important;
+      }
+
+      [data-theme="light"] .gh-label {
+        color: rgba(30, 41, 59, .45);
+      }
+
+      [data-theme="light"] .gh-sub {
+        color: rgba(30, 41, 59, .5);
+      }
+
+      [data-theme="light"] .gh-bar-scale,
+      [data-theme="light"] .gh-meta {
+        color: rgba(30, 41, 59, .35);
+      }
+
+      [data-theme="light"] .m-hdr-greeting {
+        color: #1e293b;
+      }
+
+      [data-theme="light"] .m-hdr-sub {
+        color: rgba(30, 41, 59, .5);
+      }
+
+      [data-theme="light"] .m-hdr-avatar {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+      }
+
+      [data-theme="light"] .m-page-title {
+        color: #1e293b;
+      }
+
+      [data-theme="light"] #addEv {
+        border-color: rgba(0, 0, 0, .15);
+        color: rgba(30, 41, 59, .45);
+      }
+
+      [data-theme="light"] .mnav-btn.active {
+        box-shadow: 0 4px 16px rgba(99, 102, 241, .25);
+      }
+
+      /* ── Grade hero: light mode badges ── */
+      [data-theme="light"] .gh-exem-badge.ok {
+        background: rgba(22, 163, 74, .12);
+        color: #16a34a;
+      }
+
+      [data-theme="light"] .gh-exem-badge.no {
+        background: rgba(220, 38, 38, .1);
+        color: #dc2626;
+      }
+
+      [data-theme="light"] .gh-exem-badge.warn {
+        background: rgba(217, 119, 6, .1);
+        color: #d97706;
+      }
+
+    }
+
+    /* fin @media (max-width: 600px) */
   </style>
 </head>
 
@@ -2296,7 +3865,22 @@
         <div id="authArea"></div>
         <button class="icon-btn" id="btnTheme" title="Cambiar tema"></button>
       </div>
+      <!-- Elementos exclusivos mobile (visibles solo ≤600px) -->
+      <div class="m-hdr-left" id="mHdrLeft"></div>
+      <div class="m-hdr-right" id="mHdrRight"></div>
     </header>
+
+    <!-- MOBILE: bienvenida (solo ≤600px) -->
+    <div id="mobileWelcome" class="mobile-welcome"></div>
+    <!-- MOBILE: título de sección -->
+    <div class="m-page-title" id="mPageTitle"></div>
+
+    <!-- POPUP liquid glass de selección de ramos -->
+    <div id="ramosPopup" class="ramos-popup-overlay" role="dialog" aria-modal="true" aria-label="Ramos">
+      <div class="ramos-popup-box">
+        <div id="ramosPopupContent"></div>
+      </div>
+    </div>
 
     <!-- TABS -->
     <div class="tabs-bar" id="tabsBar"></div>
@@ -2317,6 +3901,44 @@
           <button class="btn btn-ghost btn-sm" id="catDialogCancel">Cancelar</button>
           <button class="btn btn-sm btn-primary" id="catDialogConfirm">Agregar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mnav" id="mobileNav" aria-label="Navegación">
+      <button class="mnav-btn active" data-section="ramos" id="mnavRamos" aria-label="Ramos">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+        <span class="mnav-label">Ramos</span>
+      </button>
+      <button class="mnav-btn" data-section="resumen" id="mnavResumen" aria-label="Resumen">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+        <span class="mnav-label">Resumen</span>
+      </button>
+      <button class="mnav-btn" data-section="perfil" id="mnavPerfil" aria-label="Perfil">
+        <div class="mnav-avatar" id="mnavAvatar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+      </button>
+    </nav>
+
+    <!-- BOTTOM SHEET -->
+    <div class="mnav-sheet-overlay" id="mnavSheetOverlay">
+      <div class="mnav-sheet" id="mnavSheet">
+        <div class="bs-handle"></div>
+        <div id="bsContent"></div>
       </div>
     </div>
 
@@ -2388,6 +4010,9 @@
         cap: '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
         check: '<polyline points="20 6 9 17 4 12"/>',
         grip: '<polyline points="8 9 12 5 16 9" stroke-width="2" fill="none"/><polyline points="8 15 12 19 16 15" stroke-width="2" fill="none"/>',
+        cleft: '<polyline points="15 18 9 12 15 6"/>',
+        cright: '<polyline points="9 18 15 12 9 6"/>',
+        cdown: '<polyline points="6 9 12 15 18 9"/>',
       };
       return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:inline-block;vertical-align:middle">${d[name] || ''}</svg>`;
     }
@@ -2399,20 +4024,22 @@
     }
 
     /* ── Grade Hero ── */
-    function gradeHero(k, pass) {
+    function gradeHero(k, pass, badgeHtml) {
       const grade = k.avgGraded;
       const gc = gClass(grade, pass);
-      // Bar: % of course weight already evaluated (gradedW/totalW)
       const pctEval = k.totalW > 0 ? Math.min(100, Math.max(0, (k.gradedW / k.totalW) * 100)) : 0;
       const coverW = (100 - pctEval).toFixed(2);
       const pend = k.pending.length;
       const rendPct = Math.round(pctEval);
       return `
   <div class="grade-hero" data-gc="${gc}">
+    <div class="gh-header">
+      <span class="gh-label">NOTA DE PRESENTACIÓN</span>
+      ${badgeHtml || ''}
+    </div>
     <div class="gh-top">
       <div class="gh-grade ${gc}">${fmt(grade)}</div>
       <div class="gh-grade-info">
-        <span class="gh-label">Promedio actual</span>
         <span class="gh-sub">${fmtW(k.gradedW)}% del ramo evaluado · ${pend} pendiente${pend !== 1 ? 's' : ''}</span>
       </div>
     </div>
@@ -2421,7 +4048,7 @@
     </div>
     <div class="gh-bar-footer">
       <span class="gh-bar-scale">0%</span>
-      <span class="gh-meta">${rendPct}% del ramo rendido</span>
+      <span class="gh-meta">${rendPct}% rendido</span>
       <span class="gh-bar-scale">100%</span>
     </div>
   </div>`;
@@ -2521,7 +4148,7 @@
     const rN = (x, d) => Math.round((x + 1e-9) * Math.pow(10, d)) / Math.pow(10, d);
     const r1 = x => Math.round((x + 1e-9) * 10) / 10;
     const r2 = x => Math.round((x + 1e-9) * 100) / 100;
-    const num = v => { const n = parseFloat(v); return isFinite(n) ? n : null; };
+    const num = v => { const n = parseFloat(String(v ?? '').replace(/,/g, '.')); return isFinite(n) ? n : null; };
     function fmt(x) { return x == null ? '—' : rN(x, DEC).toFixed(DEC); }
     function fmtD(x, d) { return x == null ? '—' : rN(x, d).toFixed(d); }
     function fmtW(x) { const r = r1(x); return Math.round(r) === r ? r.toFixed(0) : r.toFixed(1); }
@@ -2928,11 +4555,19 @@
 
       // Banner eximición (solo si tiene examen)
       let banner = '';
+      let heroBadge = '';
       if (hasExam) {
         if (ex.overall === 'off') banner = '<div class="banner neu">Sin reglas · siempre se rinde examen</div>';
-        else if (ex.overall === 'ok') banner = '<div class="banner ok">¡Estás eximido del examen!</div>';
-        else if (ex.overall === 'no') banner = '<div class="banner no">Debes rendir el examen</div>';
-        else banner = '<div class="banner warn">Depende de notas pendientes</div>';
+        else if (ex.overall === 'ok') {
+          banner = '<div class="banner ok">¡Estás eximido del examen!</div>';
+          heroBadge = `<span class="gh-exem-badge ok">${ic('check', 11)} Eximido</span>`;
+        } else if (ex.overall === 'no') {
+          banner = '<div class="banner no">Debes rendir el examen</div>';
+          heroBadge = `<span class="gh-exem-badge no">${ic('x', 11)} Debe examen</span>`;
+        } else {
+          banner = '<div class="banner warn">Depende de notas pendientes</div>';
+          heroBadge = `<span class="gh-exem-badge warn">· Pendiente</span>`;
+        }
       }
 
       // Breakdown de reglas — tarjetas de notificación (solo con examen)
@@ -3053,7 +4688,7 @@
       return `
   <div class="block">
     <div class="block-title"><span class="block-title-icon">${ic('barchart', 12)}</span> Resultados</div>
-    ${gradeHero(k, pass)}
+    ${gradeHero(k, pass, heroBadge)}
     ${banner}
     ${breakdown}
     ${notaFinal}
@@ -3199,17 +4834,20 @@
     /* ── Render principal ── */
     function render() {
       renderTabs();
+      renderMobileCourseBar();
       const c = activeCourse();
       if (!c) {
+        const isMobile = window.matchMedia('(max-width:600px)').matches;
+        const hint = isMobile ? 'Toca el ícono de ramos y luego "Agregar ramo".' : 'Usa el botón + Ramo en la barra superior.';
         document.getElementById('mainPanel').innerHTML = `<div class="empty-state">
       <div class="empty-mark">${ic('cap', 28)}</div>
       <h3>Sin ramos</h3>
-      <p>Agrega tu primer ramo usando el botón de la barra de arriba.</p>
-      <button class="btn btn-primary" id="btnNewFirst">${ic('plus', 14)} Agregar ramo</button>
+      <p>${hint}</p>
+      ${isMobile ? '' : `<button class="btn btn-primary" id="btnNewFirst">${ic('plus', 14)} Agregar ramo</button>`}
     </div>`;
-        document.getElementById('btnNewFirst').onclick = () => {
+        document.getElementById('btnNewFirst')?.addEventListener('click', () => {
           const nc = newCourse(); state.courses.push(nc); state.active = nc.id; persist(); render();
-        };
+        });
         return;
       }
       ensureFields(c); DEC = +c.decimals || 1;
@@ -3218,12 +4856,18 @@
       panel.innerHTML = `
     <div class="course-header">
       <input class="course-name-input" id="cName" value="${escA(c.name)}" placeholder="Nombre del ramo">
+      <div class="mobile-course-actions">
+        <button class="mca-btn" id="mBtnConfig">${ic('sliders', 13)} Configuración</button>
+        <button class="mca-btn" id="mBtnExem">${ic('shield', 13)} Eximición</button>
+      </div>
     </div>
     <div class="content-grid">
       <div class="col-left">${evalsCard(c)}<div id="results">${resultsCard(c)}</div></div>
       <div class="col-right">${settingsCard(c)}${exemCard(c)}<div id="calcs">${calcsCard(c)}</div></div>
     </div>`;
-      document.getElementById('cName').oninput = e => { c.name = e.target.value; renderTabs(); persist(); };
+      document.getElementById('cName').oninput = e => { c.name = e.target.value; renderTabs(); renderMobileCourseBar(); persist(); };
+      document.getElementById('mBtnConfig')?.addEventListener('click', () => openMobileConfigSheet(c));
+      document.getElementById('mBtnExem')?.addEventListener('click', () => openMobileExemSheet(c));
       bindEvals(c); bindSettings(c); bindExem(c); bindCalcs(c); bindCollapsibles();
       const _k = calc(c), _pass = passOf(c);
       const _npW = (num(c.npWeight) || 0) / 100, _exW = (num(c.examWeight) || 0) / 100;
@@ -3260,6 +4904,7 @@
     }
     function refreshResults(c) {
       renderTabs();
+      renderMobileCourseBar();
       const r = document.getElementById('results'); if (r) r.innerHTML = resultsCard(c);
       const cc = document.getElementById('calcs'); if (cc) { cc.innerHTML = calcsCard(c); bindCalcs(c); }
       refreshExemChips(c); updateSums(c);
@@ -3523,6 +5168,8 @@
     async function onUserLogin(user) {
       currentUser = user;
       renderAuthArea(user);
+      mnavUpdateAvatar();
+      renderMobileCourseBar();
 
       /* Logout: cancelar listener en vivo */
       if (!user) {
@@ -3563,13 +5210,12 @@
           if (!remoteSnap.exists()) return;
           const remote = remoteSnap.data();
           const remoteAt = remote.updatedAt || 0;
-          if (remoteAt === _lastWrittenAt) return; /* eco propio, ignorar */
-          if (remoteAt > (state.updatedAt || 0)) {
-            state = remote.data;
-            Store.save(state);
-            applyTheme(state.theme || 'light');
-            render();
-          }
+          /* Ignorar si no es más nuevo que lo local (cubre ecos propios y datos obsoletos) */
+          if (remoteAt <= (state.updatedAt || 0)) return;
+          state = remote.data;
+          Store.save(state);
+          applyTheme(state.theme || 'light');
+          render();
         });
       } catch (e) {
         console.warn('[Gradiant] Error al sincronizar con Firestore:', e);
@@ -3581,15 +5227,30 @@
     const _dot = '<span class="sync-dot"></span>';
     function updateSyncStatus(s) {
       const el = document.getElementById('syncStatus');
-      if (!el) return;
-      void el.offsetWidth; /* reinicia animación de entrada */
-      if (s === 'local') { el.className = 'sync-local'; el.innerHTML = `${_dot}Local`; }
-      if (s === 'saving') { el.className = 'sync-saving'; el.innerHTML = `${_dot}Guardando…`; }
-      if (s === 'offline') { el.className = 'sync-offline'; el.innerHTML = `${_dot}Sin conexión`; }
-      if (s === 'ok') {
-        el.className = 'sync-ok'; el.innerHTML = `${_dot}Sincronizado ✓`;
-        clearTimeout(_syncOkTimer);
-        _syncOkTimer = setTimeout(() => { el.className = ''; el.innerHTML = ''; }, 3000);
+      if (el) {
+        void el.offsetWidth;
+        const _lbl = t => `<span class="sync-label">${t}</span>`;
+        if (s === 'local') { el.className = 'sync-local'; el.innerHTML = `${_dot}${_lbl('Local')}`; }
+        if (s === 'saving') { el.className = 'sync-saving'; el.innerHTML = `${_dot}${_lbl('Guardando…')}`; }
+        if (s === 'offline') { el.className = 'sync-offline'; el.innerHTML = `${_dot}${_lbl('Sin conexión')}`; }
+        if (s === 'ok') {
+          el.className = 'sync-ok'; el.innerHTML = `${_dot}${_lbl('Sincronizado ✓')}`;
+          clearTimeout(_syncOkTimer);
+          _syncOkTimer = setTimeout(() => { el.className = ''; el.innerHTML = ''; }, 3000);
+        }
+      }
+      /* Badge mobile en topbar */
+      const badge = document.getElementById('mHdrRight');
+      if (badge) {
+        const icons = {
+          ok: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+          saving: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>`,
+          offline: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>`,
+          local: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+        };
+        const labels = { ok: 'Guardado', saving: 'Guardando…', offline: 'Sin conexión', local: 'Local' };
+        const cls = s === 'ok' ? 'ok' : s === 'saving' ? 'saving' : s === 'offline' ? 'offline' : 'local';
+        badge.innerHTML = `<span class="m-hdr-badge ${cls}">${icons[s] || ''} ${labels[s] || ''}</span>`;
       }
     }
     window.addEventListener('online', () => updateSyncStatus(currentUser ? 'ok' : 'local'));
@@ -3653,9 +5314,442 @@
       persist();
     };
 
+    /* ── Mobile welcome + topbar ── */
+    function renderMobileCourseBar() {
+      const welcome = document.getElementById('mobileWelcome');
+      const hdrLeft = document.getElementById('mHdrLeft');
+      const courses = state.courses || [];
+
+      const firstName = (currentUser?.displayName || '').split(' ')[0];
+      const greeting = firstName ? `Hola, ${esc(firstName)} 👋` : 'Mis ramos';
+      const nps = courses.map(x => calc(x).np).filter(n => n != null);
+      const avg = nps.length ? nps.reduce((a, b) => a + b, 0) / nps.length : null;
+      const statsLine = courses.length === 0
+        ? 'Sin ramos aún'
+        : `${courses.length} ramo${courses.length !== 1 ? 's' : ''}${avg != null ? ` · Prom. ${avg.toFixed(1)}` : ''}`;
+
+      if (welcome) {
+        welcome.innerHTML = `<div class="mw-greeting">${greeting}</div><div class="mw-stats">${statsLine}</div>`;
+      }
+
+      if (hdrLeft) {
+        const avatarSvg = currentUser?.photoURL
+          ? `<img src="${escA(currentUser.photoURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" alt="">`
+          : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`;
+        hdrLeft.innerHTML = `
+          <div class="m-hdr-avatar">${avatarSvg}</div>
+          <div class="m-hdr-text">
+            <div class="m-hdr-greeting">${greeting}</div>
+            <div class="m-hdr-sub">${statsLine}</div>
+          </div>`;
+      }
+    }
+
+    /* ── Popup liquid glass de ramos ── */
+    function openRamosPopup() {
+      const overlay = document.getElementById('ramosPopup');
+      const content = document.getElementById('ramosPopupContent');
+      if (!overlay || !content) return;
+      const courses = state.courses || [];
+      const rows = courses.map(c => {
+        const k = calc(c), pass = passOf(c);
+        const grade = k.npEst != null ? fmtD(k.npEst, +c.decimals || 1) : '—';
+        const active = c.id === state.active;
+        return `<button class="ramos-popup-item${active ? ' rp-active' : ''}" data-cid="${escA(c.id)}">
+          <span class="rp-dot" style="background:${escA(c.color || '#6366f1')}"></span>
+          <span class="rp-name">${esc(c.name || 'Ramo')}</span>
+          <span class="rp-grade">${grade}</span>
+          ${active ? ic('check', 14) : ''}
+        </button>`;
+      }).join('');
+      content.innerHTML = `
+        <div class="ramos-popup-header">
+          <span class="ramos-popup-title">Ramos</span>
+          <button class="ramos-popup-close" id="ramosPopupClose" aria-label="Cerrar">${ic('x', 13)}</button>
+        </div>
+        <div class="ramos-popup-list">${rows || `<p style="padding:20px;color:rgba(255,255,255,.5);font-size:14px">Sin ramos aún.</p>`}</div>
+        <div class="ramos-popup-footer">
+          <button class="ramos-popup-add" id="ramosPopupAdd">
+            ${ic('plus', 15)} Agregar ramo
+          </button>
+        </div>`;
+      overlay.style.display = 'flex';
+      requestAnimationFrame(() => overlay.classList.add('open'));
+      document.getElementById('ramosPopupClose')?.addEventListener('click', closeRamosPopup);
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeRamosPopup(); });
+      content.querySelectorAll('.ramos-popup-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.active = btn.dataset.cid;
+          persist(); render();
+          closeRamosPopup();
+        });
+      });
+      document.getElementById('ramosPopupAdd')?.addEventListener('click', () => {
+        const c = newCourse();
+        state.courses.push(c); state.active = c.id;
+        persist(); render();
+        closeRamosPopup();
+      });
+    }
+
+    function closeRamosPopup() {
+      const overlay = document.getElementById('ramosPopup');
+      if (!overlay) return;
+      overlay.classList.remove('open');
+      setTimeout(() => { if (!overlay.classList.contains('open')) overlay.style.display = ''; }, 260);
+    }
+
+    /* ── Mobile sheet de Configuración (Etapa C) ── */
+    function openMobileConfigSheet(c) {
+      const content = document.getElementById('bsContent');
+      if (!content) return;
+      const hasExam = c.hasExam !== false;
+      content.innerHTML = `
+        <div class="bs-header">
+          <span class="bs-brand">Configuración</span>
+        </div>
+        <div class="msh-section">
+          <span class="msh-label">Examen final</span>
+          <div class="msh-row">
+            <label for="ms-hasExam">Este ramo tiene examen</label>
+            <input type="checkbox" id="ms-hasExam" class="cb-circle" ${hasExam ? 'checked' : ''}>
+          </div>
+        </div>
+        <div class="msh-section" id="ms-examSection" style="${hasExam ? '' : 'display:none'}">
+          <span class="msh-label">Pesos</span>
+          <div class="msh-row">
+            <label for="ms-np">Peso NP (%)</label>
+            <input id="ms-np" class="msh-inp" inputmode="decimal" value="${escA(c.npWeight)}">
+          </div>
+          <div class="msh-row">
+            <label for="ms-ex">Peso Examen (%)</label>
+            <input id="ms-ex" class="msh-inp" inputmode="decimal" value="${escA(c.examWeight)}">
+          </div>
+        </div>
+        <div class="msh-section">
+          <span class="msh-label">Notas</span>
+          <div class="msh-row">
+            <label for="ms-pass">Nota de aprobación</label>
+            <input id="ms-pass" class="msh-inp" inputmode="decimal" value="${escA(c.pass)}">
+          </div>
+          <div class="msh-row">
+            <label for="ms-dec">Decimales</label>
+            <select id="ms-dec" class="msh-select">
+              <option value="1" ${(+c.decimals || 1) === 1 ? 'selected' : ''}>1 (4.5)</option>
+              <option value="2" ${(+c.decimals || 1) === 2 ? 'selected' : ''}>2 (4.47)</option>
+            </select>
+          </div>
+        </div>`;
+      document.getElementById('mnavSheetOverlay').classList.add('open');
+      _bindMobileConfigSheet(c);
+    }
+
+    function _bindMobileConfigSheet(c) {
+      const hasExamEl = document.getElementById('ms-hasExam');
+      hasExamEl?.addEventListener('change', () => {
+        c.hasExam = hasExamEl.checked;
+        const sec = document.getElementById('ms-examSection');
+        if (sec) sec.style.display = c.hasExam ? '' : 'none';
+        persist(); refreshResults(c);
+      });
+      const inputs = { 'ms-np': 'npWeight', 'ms-ex': 'examWeight', 'ms-pass': 'pass' };
+      Object.entries(inputs).forEach(([id, key]) => {
+        document.getElementById(id)?.addEventListener('input', e => {
+          c[key] = e.target.value; persist(); refreshResults(c);
+        });
+      });
+      document.getElementById('ms-dec')?.addEventListener('change', e => {
+        c.decimals = +e.target.value; DEC = c.decimals; persist(); render();
+        /* reabrir sheet tras re-render */
+        requestAnimationFrame(() => openMobileConfigSheet(activeCourse() || c));
+      });
+    }
+
+    /* ── Mobile sheet de Eximición (Etapa C) ── */
+    function openMobileExemSheet(c) {
+      const content = document.getElementById('bsContent');
+      if (!content) return;
+      _renderMobileExemContent(c, content);
+      document.getElementById('mnavSheetOverlay').classList.add('open');
+    }
+
+    function _renderMobileExemContent(c, container) {
+      const on = c.exemption.enabled;
+      const k = calc(c);
+      const rulesHtml = on ? c.exemption.rules.map((rule, gi) => {
+        const condsHtml = rule.conds.map((cd, ci) => {
+          const types = [['np', 'NP estimado'], ['minAll', 'Todas las notas'], ['catAvg', 'Prom. categoría'], ['eval', 'Una evaluación']];
+          const typeSel = `<select class="msh-select" style="flex:1;height:34px;font-size:13px" data-mef="type" data-g="${gi}" data-c="${ci}">${types.map(t => `<option value="${t[0]}" ${cd.type === t[0] ? 'selected' : ''}>${t[1]}</option>`).join('')}</select>`;
+          const res = evalCond(c, cd, k);
+          const chip = res.state === 'ok' ? '<span class="chip ok" style="font-size:10px">✓</span>' : res.state === 'no' ? '<span class="chip no" style="font-size:10px">✗</span>' : '<span class="chip neu" style="font-size:10px">?</span>';
+          return `<div class="msh-cond-row">
+            ${typeSel}
+            <span style="color:var(--ink-2);font-size:13px">≥</span>
+            <input class="msh-inp" style="width:56px;flex-shrink:0" inputmode="decimal" data-mef="val" data-g="${gi}" data-c="${ci}" value="${escA(cd.val ?? '')}">
+            ${chip}
+            <button class="btn btn-sm btn-ghost btn-danger" data-mdelcond="${gi}.${ci}" style="padding:4px">${ic('x', 11)}</button>
+          </div>`;
+        }).join('');
+        const ruleState = exemStatus(c, k).groups?.[gi];
+        const ruleChip = ruleState && ruleState.state !== 'empty'
+          ? `<span class="chip ${ruleState.state}" style="font-size:10px;margin-left:auto">${ruleState.state === 'ok' ? 'se cumple' : ruleState.state === 'no' ? 'no se cumple' : 'pendiente'}</span>` : '';
+        return `<div class="msh-rule-card" data-g="${gi}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:700;color:var(--ink-2)">Regla ${gi + 1}</span>
+            ${ruleChip}
+            ${c.exemption.rules.length > 1 ? `<button class="btn btn-sm btn-ghost btn-danger" data-mdelrule="${gi}" style="margin-left:auto;padding:3px 6px">${ic('x', 11)}</button>` : ''}
+          </div>
+          ${condsHtml || '<p class="small muted" style="margin-bottom:8px">Sin condiciones.</p>'}
+          <button class="btn btn-sm" data-maddcond="${gi}" style="margin-top:6px;font-size:12px">${ic('plus', 11)} Condición</button>
+        </div>`;
+      }).concat(c.exemption.rules.length > 1 ? [] : []).join('<div class="or-badge">O</div>') : '';
+
+      container.innerHTML = `
+        <div class="bs-header">
+          <span class="bs-brand">Eximición</span>
+        </div>
+        <div class="msh-section">
+          <div class="msh-row">
+            <label for="me-on">Activar reglas de eximición</label>
+            <input type="checkbox" id="me-on" class="cb-circle" ${on ? 'checked' : ''}>
+          </div>
+        </div>
+        ${on ? `<div class="msh-section" id="me-rules">${rulesHtml}<button class="btn btn-sm" id="me-addRule" style="margin-top:4px">${ic('plus', 12)} Regla alternativa</button></div>` : '<div class="msh-section"><p class="small muted">Desactivada: siempre se rinde examen.</p></div>'}`;
+      _bindMobileExemSheet(c, container);
+    }
+
+    function _bindMobileExemSheet(c, container) {
+      const onEl = document.getElementById('me-on');
+      onEl?.addEventListener('change', () => {
+        c.exemption.enabled = onEl.checked;
+        if (onEl.checked && !c.exemption.rules.length) c.exemption.rules = [{ conds: [] }];
+        persist(); refreshResults(c);
+        _renderMobileExemContent(c, container);
+      });
+      document.getElementById('me-addRule')?.addEventListener('click', () => {
+        c.exemption.rules.push({ conds: [] }); persist();
+        _renderMobileExemContent(c, container);
+      });
+      container.querySelectorAll('[data-mdelrule]').forEach(b => b.addEventListener('click', () => {
+        c.exemption.rules.splice(+b.dataset.mdelrule, 1);
+        if (!c.exemption.rules.length) c.exemption.rules = [{ conds: [] }];
+        persist(); refreshResults(c);
+        _renderMobileExemContent(c, container);
+      }));
+      container.querySelectorAll('[data-maddcond]').forEach(b => b.addEventListener('click', () => {
+        const gi = +b.dataset.maddcond;
+        c.exemption.rules[gi].conds.push({ type: 'np', op: '>=', val: '', cat: (usedCats(c)[0] || state.categories[0] || 'Prueba'), evalId: (c.evals[0]?.id || '') });
+        persist(); _renderMobileExemContent(c, container);
+      }));
+      container.querySelectorAll('[data-mdelcond]').forEach(b => b.addEventListener('click', () => {
+        const [gi, ci] = b.dataset.mdelcond.split('.').map(Number);
+        c.exemption.rules[gi].conds.splice(ci, 1);
+        persist(); refreshResults(c);
+        _renderMobileExemContent(c, container);
+      }));
+      container.querySelectorAll('[data-mef]').forEach(el => {
+        const gi = +el.dataset.g, ci = +el.dataset.c, f = el.dataset.mef;
+        el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+          c.exemption.rules[gi].conds[ci][f] = el.value;
+          persist(); refreshResults(c);
+          if (el.tagName === 'SELECT') _renderMobileExemContent(c, container);
+        });
+      });
+    }
+
+    /* ── Mobile nav ── */
+    function mnavSetActive(section) {
+      const nav = document.getElementById('mobileNav');
+      if (!nav) return;
+      nav.querySelectorAll('.mnav-btn').forEach(b => b.classList.toggle('active', b.dataset.section === section));
+      document.body.dataset.mnav = section;
+      const titles = { ramos: 'Calculadora', resumen: 'Resumen', perfil: 'Perfil' };
+      const el = document.getElementById('mPageTitle');
+      if (el) el.textContent = titles[section] || '';
+    }
+
+    function mnavUpdateAvatar() {
+      const wrap = document.getElementById('mnavAvatar');
+      if (!wrap) return;
+      const u = currentUser;
+      if (u && u.photoURL) {
+        const initials = (u.displayName || u.email || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        wrap.innerHTML = `<img src="${escA(u.photoURL)}" referrerpolicy="no-referrer" alt="${initials}" onerror="this.outerHTML='<span style=\\'font-size:13px;font-weight:700;color:currentColor\\'>${initials}</span>'">`;
+      } else if (u) {
+        const initials = (u.displayName || u.email || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        wrap.innerHTML = `<span style="font-size:13px;font-weight:700;color:currentColor">${initials}</span>`;
+      } else {
+        wrap.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+      }
+    }
+
+    function mnavOpenSheet(type) {
+      const overlay = document.getElementById('mnavSheetOverlay');
+      const content = document.getElementById('bsContent');
+      if (!overlay || !content) return;
+      content.innerHTML = type === 'ramos' ? _buildRamosSheet() : _buildPerfilSheet();
+      overlay.classList.add('open');
+      type === 'ramos' ? _bindRamosSheet() : _bindPerfilSheet();
+    }
+
+    function mnavCloseSheet() {
+      document.getElementById('mnavSheetOverlay')?.classList.remove('open');
+    }
+
+    function _themeLabel() { return state.theme === 'dark' ? 'Oscuro ☾' : 'Claro ☀︎'; }
+
+    function _buildRamosSheet() {
+      const courses = state.courses || [];
+      const rows = courses.map(c => {
+        const k = calc(c), grade = k.np != null ? k.np.toFixed(+c.decimals || 1) : '—';
+        const active = c.id === state.active;
+        return `<button class="bs-course-item${active ? ' bs-active' : ''}" data-cid="${escA(c.id)}">
+          <span class="bs-course-dot" style="background:${escA(c.color || '#6366f1')}"></span>
+          <span class="bs-course-name">${esc(c.name || 'Ramo')}</span>
+          <span class="bs-course-grade">${grade}</span>
+          ${active ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+        </button>`;
+      }).join('');
+      return `
+        <div class="bs-header">
+          <span class="bs-brand">Ramos</span>
+          <div id="bsSyncClone"></div>
+        </div>
+        <div id="bsCourseList">${rows || `<p style="padding:20px 20px 8px;color:var(--ink-2);font-size:14px">Sin ramos aún.</p>`}</div>
+        <button class="bs-add-btn" id="bsAddCourse">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar ramo
+        </button>`;
+    }
+
+    function _bindRamosSheet() {
+      /* clonar sync status */
+      const src = document.getElementById('syncStatus');
+      const dst = document.getElementById('bsSyncClone');
+      if (src && dst) { dst.innerHTML = src.innerHTML; dst.className = src.className; }
+      /* seleccionar ramo */
+      document.querySelectorAll('.bs-course-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.active = btn.dataset.cid;
+          persist(); render();
+          mnavCloseSheet();
+          mnavSetActive('ramos');
+        });
+      });
+      /* agregar ramo */
+      document.getElementById('bsAddCourse')?.addEventListener('click', () => {
+        const c = newCourse();
+        state.courses.push(c); state.active = c.id;
+        persist(); render();
+        mnavCloseSheet();
+        mnavSetActive('ramos');
+      });
+    }
+
+    function _buildPerfilSheet() {
+      const u = currentUser;
+      if (u) {
+        const initials = (u.displayName || u.email || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const avatar = u.photoURL
+          ? `<img class="bs-p-avatar" src="${escA(u.photoURL)}" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'bs-p-initials',textContent:'${initials}'}))">`
+          : `<div class="bs-p-initials">${initials}</div>`;
+        return `
+          <div class="bs-profile-body">
+            ${avatar}
+            <div class="bs-p-name">${esc(u.displayName || u.email || '')}</div>
+            <div class="bs-p-email">${esc(u.email || '')}</div>
+          </div>
+          <button class="bs-row bs-row-red" id="bsSignOut" style="margin-top:8px">
+            <span>Cerrar sesión</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>`;
+      } else {
+        return `
+          <div class="bs-profile-body">
+            <div class="bs-p-initials" style="font-size:30px;color:rgba(255,255,255,.5)">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="bs-p-name">Sin sesión</div>
+            <div class="bs-p-email">Inicia sesión para sincronizar tus ramos entre dispositivos</div>
+          </div>
+          <div style="padding:8px 20px 16px">
+            <button class="gbtn" id="bsSignIn" style="width:100%;justify-content:center">
+              <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262" class="gbtn-svg"><path fill="#4285F4" d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" class="g-blue"/><path fill="#34A853" d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1" class="g-green"/><path fill="#FBBC05" d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782" class="g-yellow"/><path fill="#EB4335" d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251" class="g-red"/></svg>
+              <span class="gbtn-text">Sign in with Google</span>
+            </button>
+          </div>`;
+      }
+    }
+
+    function _bindPerfilSheet() {
+      document.getElementById('bsSignOut')?.addEventListener('click', () => {
+        mnavCloseSheet();
+        signOut(fbAuth).catch(e => console.error('[Gradiant] signOut error', e));
+      });
+      document.getElementById('bsSignIn')?.addEventListener('click', () =>
+        signInWithPopup(fbAuth, new GoogleAuthProvider()).catch(e => console.error('[Gradiant] signIn error', e)));
+    }
+
+    function initMobileNav() {
+      const nav = document.getElementById('mobileNav');
+      const overlay = document.getElementById('mnavSheetOverlay');
+      if (!nav) return;
+      document.body.dataset.mnav = 'ramos';
+      const _pt = document.getElementById('mPageTitle');
+      if (_pt) _pt.textContent = 'Calculadora';
+      /* Cerrar sheet al tocar el fondo */
+      overlay?.addEventListener('click', e => { if (e.target === overlay) mnavCloseSheet(); });
+      nav.addEventListener('click', e => {
+        const btn = e.target.closest('.mnav-btn');
+        if (!btn) return;
+        const section = btn.dataset.section;
+        const current = document.body.dataset.mnav;
+        if (section === 'resumen') {
+          mnavCloseSheet();
+          mnavSetActive('resumen');
+        } else if (section === 'ramos') {
+          if (current === 'ramos') {
+            /* Ya en ramos → abrir popup de selección */
+            openRamosPopup();
+          } else {
+            /* Venía de otra sección → solo cambiar vista, sin abrir sheet */
+            mnavCloseSheet();
+            mnavSetActive('ramos');
+          }
+        } else if (section === 'perfil') {
+          /* Perfil siempre abre su sheet */
+          mnavOpenSheet('perfil');
+        }
+      });
+    }
+
+    /* ── Teclado: forzar punto como separador decimal ──
+       Intercepta la coma antes de que aparezca en el input y la convierte en punto.
+       Funciona en iOS y Android independientemente del idioma del sistema. */
+    document.addEventListener('beforeinput', e => {
+      if (e.data !== ',') return;
+      const t = e.target;
+      if (!t.matches('[inputmode="decimal"]')) return;
+      e.preventDefault();
+      const s = t.selectionStart, en = t.selectionEnd;
+      t.value = t.value.slice(0, s) + '.' + t.value.slice(en);
+      t.setSelectionRange(s + 1, s + 1);
+      t.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    /* Seguridad extra: si una coma llega igual (ej. pegado), reemplazarla */
+    document.addEventListener('input', e => {
+      const t = e.target;
+      if (!t.matches('[inputmode="decimal"]') || !t.value.includes(',')) return;
+      const pos = t.selectionStart;
+      t.value = t.value.replace(/,/g, '.');
+      try { t.setSelectionRange(pos, pos); } catch (_) { }
+    }, true);
+
     /* ── Init ── */
     initCatDialog();
     initModal();
+    initMobileNav();
     (async function () {
       const loaded = await Store.load();
       if (loaded && Array.isArray(loaded.courses) && loaded.courses.length) {
@@ -3670,6 +5764,7 @@
       }
       applyTheme(state.theme || 'light');
       render();
+      updateSyncStatus('local');
     })();
 
     /* Arrancar listener de auth (después del render inicial para no bloquear la UI) */
