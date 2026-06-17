@@ -3399,51 +3399,43 @@
       }
 
       /* ── Eval items como cards ──
-         Grid 4 col:
-         row1: nombre (1/-1)
-         row2: cat(1) | peso(2) | nota(3) | del(4)
+         flex-wrap en <tr>: row1 = nombre (100%), row2 = cat|peso|nota|del
+         (flex-wrap es más fiable que grid en <tr> de tabla en Chrome/Safari)
       */
-      table:has(#evBody) {
-        display: block;
-        width: 100%;
-      }
-
-      #evBody {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      /* Forzar block para que los td salgan del modo table-cell */
-      #evBody tr>td {
-        display: block;
-      }
+      table:has(#evBody) { display: block !important; width: 100%; }
+      #evBody { display: flex !important; flex-direction: column; gap: 8px; }
 
       #evBody tr {
-        display: grid;
-        grid-template-columns: 1fr auto auto 28px;
-        grid-template-rows: auto auto;
+        display: flex !important;
+        flex-wrap: wrap;
+        align-items: center;
         column-gap: clamp(6px, 2vw, 10px);
         row-gap: 0;
         background: var(--surface);
         border-radius: 14px;
-        padding: clamp(12px, 3.5vw, 14px) clamp(12px, 3.5vw, 14px);
+        padding: clamp(12px, 3.5vw, 14px);
         border: 1px solid var(--border);
       }
 
-      /* td1: grip → oculto */
-      #evBody tr td.ev-grip {
-        display: none;
+      /* Resetear todos los td para participar en flex */
+      #evBody tr > td {
+        display: flex !important;
+        align-items: center;
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+        width: auto !important;
       }
 
-      /* td2: nombre → row1, todas las cols */
+      /* td1: grip → oculto */
+      #evBody tr td.ev-grip { display: none !important; }
+
+      /* td2: nombre → 100% ancho, fuerza salto a la siguiente "fila" */
       #evBody tr td.ev-name {
-        grid-column: 1 / -1;
-        grid-row: 1;
-        display: flex;
-        align-items: center;
-        padding-bottom: clamp(6px, 1.8vw, 8px);
-        border-bottom: 1px solid var(--border);
+        flex: 0 0 100% !important;
+        order: 0;
+        padding-bottom: clamp(6px, 1.8vw, 8px) !important;
+        border-bottom: 1px solid var(--border) !important;
         margin-bottom: clamp(6px, 1.8vw, 8px);
       }
 
@@ -3459,16 +3451,13 @@
         outline: none;
       }
 
-      #evBody tr td.ev-name input::placeholder {
-        color: var(--muted);
-      }
+      #evBody tr td.ev-name input::placeholder { color: var(--muted); }
 
-      /* td3: categoría → row2, col1 */
+      /* td3: categoría → fila2, crece para ocupar el espacio */
       #evBody tr td:nth-child(3) {
-        grid-column: 1;
-        grid-row: 2;
-        display: flex;
-        align-items: center;
+        order: 1;
+        flex: 1 1 auto;
+        min-width: 0;
       }
 
       #evBody tr td:nth-child(3) select {
@@ -3492,12 +3481,11 @@
         color: var(--tc, #6366f1);
       }
 
-      /* td4: peso → row2, col2 */
+      /* td4: peso → fila2, junto a categoría, aspecto de texto */
       #evBody tr td:nth-child(4) {
-        grid-column: 2;
-        grid-row: 2;
-        display: flex;
-        align-items: center;
+        order: 2;
+        flex: 0 0 auto;
+        width: auto !important;
       }
 
       #evBody tr td:nth-child(4) .autow {
@@ -3506,29 +3494,27 @@
         font-weight: 600;
       }
 
-      /* Peso manual: sin borde, aspecto de texto muted */
       #evBody tr td:nth-child(4) input.num-inp {
-        appearance: textfield;
-        -moz-appearance: textfield;
-        background: transparent;
+        appearance: textfield !important;
+        -moz-appearance: textfield !important;
+        background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        font-size: clamp(11px, 3vw, 12px);
-        font-weight: 600;
-        color: var(--muted);
-        width: clamp(28px, 8vw, 36px);
-        height: auto;
-        padding: 0;
-        text-align: left;
+        font-size: clamp(11px, 3vw, 12px) !important;
+        font-weight: 600 !important;
+        color: var(--muted) !important;
+        width: clamp(28px, 8vw, 36px) !important;
+        height: auto !important;
+        padding: 0 !important;
+        text-align: left !important;
         outline: none;
       }
 
-      /* td5: nota → row2, col3 — grande y coloreada */
+      /* td5: nota → fila2, empujada a la derecha */
       #evBody tr td.ev-nota {
-        grid-column: 3;
-        grid-row: 2;
-        display: flex;
-        align-items: center;
+        order: 3;
+        flex: 0 0 auto;
+        margin-left: auto;
         justify-content: flex-end;
       }
 
@@ -3549,38 +3535,17 @@
         font-variant-numeric: tabular-nums;
       }
 
-      #evBody tr td.ev-nota input.num-inp:focus {
-        color: var(--ink);
-      }
+      #evBody tr td.ev-nota input.num-inp:focus { color: var(--ink); }
 
-      /* Colores en mobile: solo texto, sin fondo */
-      #evBody tr td.ev-nota input.num-inp.g-ok {
-        color: var(--good) !important;
-        background: transparent !important;
-        border-color: transparent !important;
-        box-shadow: none !important;
-      }
+      #evBody tr td.ev-nota input.num-inp.g-ok   { color: var(--good) !important; background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+      #evBody tr td.ev-nota input.num-inp.g-warn  { color: var(--warn) !important; background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+      #evBody tr td.ev-nota input.num-inp.g-no    { color: var(--bad)  !important; background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
 
-      #evBody tr td.ev-nota input.num-inp.g-warn {
-        color: var(--warn) !important;
-        background: transparent !important;
-        border-color: transparent !important;
-        box-shadow: none !important;
-      }
-
-      #evBody tr td.ev-nota input.num-inp.g-no {
-        color: var(--bad) !important;
-        background: transparent !important;
-        border-color: transparent !important;
-        box-shadow: none !important;
-      }
-
-      /* td6: eliminar → row2, col4 (esquina inferior derecha, sutil) */
+      /* td6: eliminar → fila2, esquina derecha */
       #evBody tr td:nth-child(6) {
-        grid-column: 4;
-        grid-row: 2;
-        display: flex;
-        align-items: center;
+        order: 4;
+        flex: 0 0 28px;
+        width: 28px !important;
         justify-content: center;
       }
 
@@ -3594,28 +3559,14 @@
         opacity: .4;
       }
 
-      #evBody tr:active {
-        background: var(--surface-2);
-      }
+      #evBody tr:active { background: var(--surface-2); }
 
-      /* Ocultar bordes de td heredados del desktop en mobile */
-      #evBody td {
-        border-bottom: none !important;
-      }
+      #evBody td { border-bottom: none !important; }
 
-      /* Ocultar thead (las columnas no se necesitan en card layout) */
-      table thead {
-        display: none;
-      }
+      table thead { display: none !important; }
 
-      /* tfoot: quitar su aspecto de tabla */
       table tfoot tr,
-      table tfoot td {
-        display: block;
-        border: none;
-        padding: 0;
-        background: transparent;
-      }
+      table tfoot td { display: block; border: none; padding: 0; background: transparent; }
 
       /* ── Botón agregar evaluación ── */
       #addEv {
