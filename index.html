@@ -943,6 +943,10 @@
       display: none;
     }
 
+    #mobileResumenView {
+      display: none;
+    }
+
     /* ─── FORM ─── */
     input,
     select {
@@ -4314,26 +4318,31 @@
       }
 
       .mev-container {
-        border-radius: var(--radius-card);
-        overflow: hidden;
-        background: var(--glass-bg);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
-      }
-
-      [data-theme="light"] .mev-container {
-        background: var(--glass-bg);
-        border-color: var(--glass-border);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
       }
 
       .mev-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 11px 16px;
+        padding: 12px 16px;
         gap: 10px;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.09);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+
+      [data-theme="light"] .mev-item {
+        background: rgba(255,255,255,0.75);
+        border: 1px solid rgba(0,0,0,0.07);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       }
 
       .mev-item-main {
@@ -4385,8 +4394,10 @@
         font-size: 14px;
         font-weight: 600;
         color: var(--ink);
-        width: 100%;
-        min-width: 0;
+        width: auto;
+        min-width: 60px;
+        max-width: 100%;
+        field-sizing: content;
       }
 
       .mev-name-inp {
@@ -4484,27 +4495,29 @@
       }
 
       .mev-sep {
-        height: 1px;
-        margin: 0 16px 0 34px;
-        background: var(--border);
-        opacity: 0.5;
+        display: none;
       }
 
       .mev-add {
         width: 100%;
-        padding: 13px 16px;
+        padding: 12px 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        background: transparent;
-        border: none;
-        border-top: 1px dashed var(--border);
+        background: rgba(255,255,255,0.04);
+        border: 1.5px dashed rgba(255,255,255,0.15);
+        border-radius: 22px;
         color: var(--muted);
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
         font-family: inherit;
+        margin-top: 4px;
+      }
+      [data-theme="light"] .mev-add {
+        background: rgba(0,0,0,0.02);
+        border: 1.5px dashed rgba(0,0,0,0.15);
       }
 
       .mev-add:active {
@@ -7117,12 +7130,19 @@
       const rulesHtml = on ? c.exemption.rules.map((rule, gi) => {
         const condsHtml = rule.conds.map((cd, ci) => {
           const types = [['np', 'NP estimado'], ['minAll', 'Todas las notas'], ['catAvg', 'Prom. categoría'], ['eval', 'Una evaluación']];
-          const typeSel = `<select class="msh-select" style="flex:1;height:34px;font-size:13px" data-mef="type" data-g="${gi}" data-c="${ci}">${types.map(t => `<option value="${t[0]}" ${cd.type === t[0] ? 'selected' : ''}>${t[1]}</option>`).join('')}</select>`;
+          const typeSel = `<select class="msh-select" style="flex:1;min-width:0;height:34px;font-size:13px" data-mef="type" data-g="${gi}" data-c="${ci}">${types.map(t => `<option value="${t[0]}" ${cd.type === t[0] ? 'selected' : ''}>${t[1]}</option>`).join('')}</select>`;
+          const cats = mergedCats(c);
+          const extraSel = cd.type === 'catAvg'
+            ? `<select class="msh-select" style="flex:1;min-width:0;height:34px;font-size:13px" data-mef="cat" data-g="${gi}" data-c="${ci}">${cats.map(ct => `<option value="${escA(ct)}" ${cd.cat === ct ? 'selected' : ''}>${esc(ct)}</option>`).join('')}</select>`
+            : cd.type === 'eval'
+            ? `<select class="msh-select" style="flex:1;min-width:0;height:34px;font-size:13px" data-mef="evalId" data-g="${gi}" data-c="${ci}">${c.evals.map(ev => `<option value="${escA(ev.id)}" ${cd.evalId === ev.id ? 'selected' : ''}>${esc(ev.name || 'Sin nombre')}</option>`).join('')}</select>`
+            : '';
           const res = evalCond(c, cd, k);
           const chip = res.state === 'ok' ? '<span class="chip ok" style="font-size:10px">✓</span>' : res.state === 'no' ? '<span class="chip no" style="font-size:10px">✗</span>' : '<span class="chip neu" style="font-size:10px">?</span>';
-          return `<div class="msh-cond-row">
+          return `<div class="msh-cond-row" style="flex-wrap:wrap;gap:6px">
             ${typeSel}
-            <span style="color:var(--ink-2);font-size:13px">≥</span>
+            ${extraSel}
+            <span style="color:var(--ink-2);font-size:13px;align-self:center">≥</span>
             <input class="msh-inp" style="width:56px;flex-shrink:0" inputmode="decimal" data-mef="val" data-g="${gi}" data-c="${ci}" value="${escA(cd.val ?? '')}">
             ${chip}
             <button class="btn btn-sm btn-ghost btn-danger" data-mdelcond="${gi}.${ci}" style="padding:4px">${ic('x', 11)}</button>
