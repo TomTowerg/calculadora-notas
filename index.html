@@ -821,6 +821,30 @@
       color: var(--muted);
     }
 
+    .btn-import-desktop {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 10px;
+      font: 600 13px/1 var(--font);
+      color: var(--ink-2);
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-import-desktop:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    }
+    @media (max-width: 600px) {
+      .btn-import-desktop { display: none; }
+    }
+
     .course-name-input:focus {
       border-bottom-color: var(--accent)
     }
@@ -2442,6 +2466,7 @@
         border-radius: 50%;
       }
 
+
       /* Bottom sheet overlay */
       .mnav-sheet-overlay {
         display: flex;
@@ -2466,7 +2491,7 @@
         background: rgba(18, 18, 32, 0.82);
         backdrop-filter: blur(48px) saturate(180%);
         -webkit-backdrop-filter: blur(48px) saturate(180%);
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-bottom: none;
         border-radius: clamp(18px, 4.5vw, 24px) clamp(18px, 4.5vw, 24px) 0 0;
         padding-bottom: calc(clamp(12px, 3vw, 20px) + env(safe-area-inset-bottom));
@@ -2479,7 +2504,7 @@
 
       [data-theme="light"] .mnav-sheet {
         background: rgba(240, 240, 255, 0.88);
-        border: 1px solid rgba(0,0,0,0.07);
+        border: 1px solid rgba(0, 0, 0, 0.07);
         border-bottom: none;
       }
 
@@ -2505,10 +2530,11 @@
         align-items: center;
         gap: clamp(8px, 2.5vw, 12px);
         padding: clamp(12px, 3.5vw, 16px) clamp(16px, 5vw, 22px);
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
+
       [data-theme="light"] .bs-header {
-        border-bottom: 1px solid rgba(0,0,0,0.07);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.07);
       }
 
       .bs-logo {
@@ -3196,6 +3222,252 @@
       background: rgba(0, 0, 0, .05)
     }
 
+    /* ── Syllabus import modal (global: desktop popup + mobile bottom sheet) ── */
+    @keyframes syl-spin { to { transform: rotate(360deg); } }
+
+    .syl-overlay {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      z-index: 300;
+      pointer-events: none;
+      transition: background .3s;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .syl-overlay.open {
+      background: rgba(0,0,0,.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      pointer-events: all;
+    }
+    .syl-sheet {
+      background: rgba(18,18,32,0.92);
+      backdrop-filter: blur(48px) saturate(180%);
+      -webkit-backdrop-filter: blur(48px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90dvh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      transform: scale(0.96) translateY(10px);
+      opacity: 0;
+      transition: transform .28s cubic-bezier(.32,.72,0,1), opacity .22s;
+      padding-bottom: 16px;
+    }
+    [data-theme="light"] .syl-sheet {
+      background: rgba(245,245,255,0.96);
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+    }
+    .syl-overlay.open .syl-sheet { transform: scale(1) translateY(0); opacity: 1; }
+
+    @media (max-width: 600px) {
+      .syl-overlay {
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: stretch;
+        padding: 0;
+      }
+      .syl-sheet {
+        border-radius: 24px 24px 0 0;
+        border-bottom: none;
+        max-width: 100%;
+        transform: translateY(100%);
+        opacity: 1;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      }
+      .syl-overlay.open .syl-sheet { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Header y contenido del popup */
+    .syl-sheet .bs-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    [data-theme="light"] .syl-sheet .bs-header {
+      border-bottom-color: rgba(0,0,0,0.07);
+    }
+    .syl-sheet .bs-brand {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      color: var(--ink);
+    }
+
+    .syl-body { padding: 0 20px 8px; }
+    .syl-sub   { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .syl-source-btn {
+      width: 100%; display: flex; align-items: center; gap: 14px;
+      padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06); color: var(--ink);
+      font-size: 14px; font-weight: 600; cursor: pointer; text-align: left;
+      transition: background .15s; margin-bottom: 10px; font-family: inherit;
+    }
+    [data-theme="light"] .syl-source-btn {
+      background: rgba(255,255,255,0.75); border-color: rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .syl-source-btn:hover { background: rgba(255,255,255,0.1); }
+    .syl-source-btn:active { background: rgba(255,255,255,0.14); }
+    .syl-source-icon {
+      width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center; color: #fff;
+    }
+    .syl-source-desc { font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+    .syl-textarea {
+      width: 100%; box-sizing: border-box; min-height: 140px; resize: vertical;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px; color: var(--ink); font-size: 13px; font-family: inherit;
+      padding: 14px; outline: none; line-height: 1.5; margin-top: 10px;
+    }
+    [data-theme="light"] .syl-textarea {
+      background: rgba(255,255,255,0.75); border-color: rgba(0,0,0,0.1);
+    }
+    .syl-textarea:focus { border-color: rgba(99,102,241,0.5); }
+
+    .syl-loading {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 48px 20px; gap: 16px;
+    }
+    .syl-spinner {
+      width: 56px; height: 56px;
+      display: grid;
+      border-radius: 50%;
+      -webkit-mask: radial-gradient(farthest-side,#0000 40%,#6366f1 41%);
+      mask: radial-gradient(farthest-side,#0000 40%,#6366f1 41%);
+      background:
+        linear-gradient(0deg, rgba(99,102,241,0.5) 50%, rgba(99,102,241,1) 0) center/4.5px 100%,
+        linear-gradient(90deg, rgba(99,102,241,0.25) 50%, rgba(99,102,241,0.75) 0) center/100% 4.5px;
+      background-repeat: no-repeat;
+      animation: syl-spin 1s infinite steps(12);
+    }
+    .syl-spinner::before,
+    .syl-spinner::after {
+      content: "";
+      grid-area: 1/1;
+      border-radius: 50%;
+      background: inherit;
+      opacity: 0.915;
+      transform: rotate(30deg);
+    }
+    .syl-spinner::after {
+      opacity: 0.83;
+      transform: rotate(60deg);
+    }
+    .syl-loading-txt { font-size: 13px; color: var(--muted); text-align: center; }
+
+    .syl-confidence {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border-radius: 14px; margin-bottom: 14px;
+      font-size: 12px; font-weight: 700;
+    }
+    .syl-confidence.high { background: rgba(52,199,89,.12); color: #4ade80; border: 1px solid rgba(52,199,89,.2); }
+    .syl-confidence.mid  { background: rgba(245,158,11,.12); color: #fbbf24; border: 1px solid rgba(245,158,11,.2); }
+    .syl-confidence.low  { background: rgba(239,68,68,.12);  color: #f87171; border: 1px solid rgba(239,68,68,.2); }
+    [data-theme="light"] .syl-confidence.high { background: rgba(52,199,89,.1);  color: #16a34a; }
+    [data-theme="light"] .syl-confidence.mid  { background: rgba(245,158,11,.1); color: #d97706; }
+    [data-theme="light"] .syl-confidence.low  { background: rgba(239,68,68,.1);  color: #dc2626; }
+
+    .syl-section-title {
+      font-size: 10px; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3);
+      margin: 18px 0 8px;
+    }
+    [data-theme="light"] .syl-section-title { color: rgba(0,0,0,0.3); }
+
+    .syl-field-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-radius: 14px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 6px;
+    }
+    [data-theme="light"] .syl-field-row {
+      background: rgba(255,255,255,0.75); border-color: rgba(0,0,0,0.07);
+    }
+    .syl-field-label { font-size: 13px; font-weight: 500; color: var(--ink); }
+    .syl-field-inp {
+      background: transparent; border: none; outline: none;
+      color: var(--ink); font-size: 13px; font-weight: 700;
+      text-align: right; width: 80px; font-family: inherit;
+    }
+    .syl-field-sel {
+      background: transparent; border: none; outline: none;
+      color: var(--ink); font-size: 13px; font-weight: 700;
+      text-align: right; font-family: inherit; cursor: pointer;
+    }
+
+    .syl-eval-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 14px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 6px;
+    }
+    [data-theme="light"] .syl-eval-card {
+      background: rgba(255,255,255,0.75); border-color: rgba(0,0,0,0.07);
+    }
+    .syl-eval-name {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--ink); font-size: 13px; font-weight: 600; font-family: inherit;
+      min-width: 0;
+    }
+    .syl-eval-cat {
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+      background: rgba(99,102,241,.2); color: #a5b4fc; white-space: nowrap;
+      border: none; cursor: pointer; font-family: inherit;
+    }
+    .syl-eval-w {
+      background: transparent; border: none; outline: none;
+      color: var(--muted); font-size: 12px; font-weight: 700;
+      width: 44px; text-align: right; font-family: inherit;
+    }
+
+    .syl-warn-item {
+      display: flex; gap: 8px; align-items: flex-start;
+      font-size: 12px; color: #fbbf24; padding: 4px 0;
+    }
+
+    .syl-actions {
+      display: flex; gap: 10px; padding: 14px 20px 16px;
+      position: sticky; bottom: 0;
+      background: rgba(18,18,32,0.95);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      border-radius: 0 0 24px 24px;
+    }
+    [data-theme="light"] .syl-actions {
+      background: rgba(245,245,255,0.97);
+      border-top-color: rgba(0,0,0,0.07);
+    }
+    .syl-btn-cancel {
+      flex: 1; padding: 13px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06); color: var(--muted);
+      font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: background .15s;
+    }
+    .syl-btn-cancel:hover { background: rgba(255,255,255,0.1); }
+    .syl-btn-apply {
+      flex: 2; padding: 13px; border-radius: 16px; border: none;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+      transition: opacity .15s;
+    }
+    .syl-btn-apply:hover { opacity: .9; }
+    .syl-btn-apply:disabled { opacity: .5; cursor: not-allowed; }
+
     /* ─── BOTONES DE ACCESO RÁPIDO (config / eximición) — solo mobile ─── */
     .mobile-course-actions {
       display: none
@@ -3275,6 +3547,15 @@
       flex: 1
     }
 
+    /* Evitar zoom automático de iOS al enfocar inputs (requiere font-size ≥ 16px) */
+    @media (max-width: 600px) {
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    }
+
     .msh-inp {
       width: clamp(70px, 20vw, 90px);
       height: 38px;
@@ -3283,7 +3564,7 @@
       border-radius: 8px;
       background: var(--surface-2);
       color: var(--ink);
-      font: 600 14px/1 var(--font);
+      font: 600 16px/1 var(--font);
       flex-shrink: 0;
     }
 
@@ -3294,7 +3575,7 @@
       border-radius: 8px;
       background: var(--surface-2);
       color: var(--ink);
-      font: 14px var(--font);
+      font: 16px var(--font);
       padding: 0 8px;
     }
 
@@ -3429,9 +3710,17 @@
       }
 
       @keyframes avatar-pulse {
-        0%, 100% { box-shadow: 0 0 0 2px rgba(99,102,241,0.3), 0 2px 14px rgba(99,102,241,0.4); }
-        50%       { box-shadow: 0 0 0 4px rgba(139,92,246,0.2), 0 4px 22px rgba(139,92,246,0.5); }
+
+        0%,
+        100% {
+          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3), 0 2px 14px rgba(99, 102, 241, 0.4);
+        }
+
+        50% {
+          box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2), 0 4px 22px rgba(139, 92, 246, 0.5);
+        }
       }
+
       .m-hdr-avatar {
         width: clamp(36px, 9vw, 42px);
         height: clamp(36px, 9vw, 42px);
@@ -4333,16 +4622,16 @@
         padding: 12px 16px;
         gap: 10px;
         border-radius: 22px;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.09);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.09);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
       }
 
       [data-theme="light"] .mev-item {
-        background: rgba(255,255,255,0.75);
-        border: 1px solid rgba(0,0,0,0.07);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(0, 0, 0, 0.07);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       }
 
       .mev-item-main {
@@ -4391,7 +4680,7 @@
 
       .mev-name,
       .mev-name-inp {
-        font-size: 14px;
+        font-size: 16px; /* ≥16px evita el zoom automático de iOS al enfocar */
         font-weight: 600;
         color: var(--ink);
         width: auto;
@@ -4505,8 +4794,8 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        background: rgba(255,255,255,0.04);
-        border: 1.5px dashed rgba(255,255,255,0.15);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1.5px dashed rgba(255, 255, 255, 0.15);
         border-radius: 22px;
         color: var(--muted);
         font-size: 13px;
@@ -4515,9 +4804,10 @@
         font-family: inherit;
         margin-top: 4px;
       }
+
       [data-theme="light"] .mev-add {
-        background: rgba(0,0,0,0.02);
-        border: 1.5px dashed rgba(0,0,0,0.15);
+        background: rgba(0, 0, 0, 0.02);
+        border: 1.5px dashed rgba(0, 0, 0, 0.15);
       }
 
       .mev-add:active {
@@ -5041,6 +5331,9 @@
   </style>
 </head>
 
+<!-- config.local.js está en .gitignore — contiene la API key de OpenRouter -->
+<script src="config.local.js" onerror="console.warn('config.local.js no encontrado — funciones de importar syllabus desactivadas.')"></script>
+
 <body>
   <!-- Aurora background (solo mobile, oculto en desktop via CSS) -->
   <div class="aurora-bg" id="auroraBg" aria-hidden="true">
@@ -5134,6 +5427,14 @@
       </button>
     </nav>
 
+    <!-- SYLLABUS IMPORT MODAL -->
+    <div id="syllabusModal" class="syl-overlay" aria-hidden="true">
+      <div class="syl-sheet">
+        <div class="bs-handle"></div>
+        <div id="sylContent"></div>
+      </div>
+    </div>
+
     <!-- BOTTOM SHEET -->
     <div class="mnav-sheet-overlay" id="mnavSheetOverlay">
       <div class="mnav-sheet" id="mnavSheet">
@@ -5178,7 +5479,532 @@
       appId: "1:866991632250:web:d08646b634583d115db0c3",
     };
 
-    /* Si Firebase falla, la app sigue funcionando en modo local sin errores */
+    /* ── OpenRouter config ──────────────────────────────────────────────────
+       La seguridad se controla con el límite de gasto mensual en OpenRouter
+       (Settings → Limits). Para producción real, migrar a una Cloud Function.  */
+    const OPENROUTER_API_KEY = window.OPENROUTER_API_KEY || '';
+
+    const OPENROUTER_SYSTEM_PROMPT = `Eres un asistente especializado en leer programas de curso (syllabus) universitarios y extraer su estructura de evaluación en un formato JSON exacto.
+
+Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, sin backticks de markdown. Si no puedes determinar un campo con certeza, usa tu mejor estimación y repórtalo en "warnings".
+
+## Formato de salida exacto
+
+{
+  "name": string,
+  "scale": "1-7" | "0-10" | "0-100" | "0-20" | "0-5",
+  "pass": number,
+  "hasExam": boolean,
+  "npWeight": number,
+  "examWeight": number,
+  "evals": [
+    { "name": string, "cat": string, "weight": number }
+  ],
+  "exemption": {
+    "enabled": boolean,
+    "rules": [
+      {
+        "conds": [
+          { "type": "np" | "minAll" | "catAvg", "cat": string | null, "val": number }
+        ]
+      }
+    ]
+  },
+  "code": string | null,
+  "credits": number | null,
+  "confidence": number,
+  "warnings": [string]
+}
+
+## Reglas de extracción
+
+1. **name**: nombre completo del curso tal como aparece en el syllabus, SIN incluir el código. Ejemplo: si el syllabus dice "MAT401 - Cálculo I", name debe ser "Cálculo I" y code debe ser "MAT401".
+
+1b. **code**: sigla o código del curso (ej. "MAT401", "ICS2613", "ECO101"). Si no aparece ningún código, usa null.
+
+1c. **credits**: número de créditos o unidades del curso (busca "créditos", "SCT", "unidades", "credits", "UC"). Si no se menciona, usa null.
+
+2. **scale**: detecta la escala de notas del documento.
+   - Chile/Venezuela: notas como "4.0", "7.0", "nota mínima de aprobación 4.0" → "1-7"
+   - Colombia: notas como "3.0", "5.0" → "0-5"
+   - México/España/Argentina: notas como "6", "10", "70" → revisa el rango máximo mencionado; si el máximo es 10 → "0-10"; si es 100 o se habla de "porcentaje para aprobar" tipo 60% → "0-100"
+   - Si no hay evidencia clara, usa "1-7" y agrega un warning.
+
+3. **pass**: nota mínima de aprobación, en la escala detectada. Si no se especifica, usa el estándar de esa escala (1-7→4.0, 0-10→6.0, 0-100→60, 0-20→10, 0-5→3.0) y agrégalo a warnings.
+
+4. **hasExam**: true si el curso tiene examen final separado de las evaluaciones del semestre. false si la nota final es directamente el promedio de evaluaciones (sin examen).
+
+5. **npWeight / examWeight**: deben sumar 100. Si hasExam es false, npWeight=100 y examWeight=0. Si el syllabus no especifica el peso del examen pero confirma que existe, usa 40/60 como estimación razonable y repórtalo en warnings.
+
+6. **evals**: cada evaluación mencionada con nombre, categoría y peso porcentual.
+   - "cat" agrupa evaluaciones similares: usa categorías cortas y consistentes como "Prueba", "Control", "Tarea", "Proyecto", "Laboratorio", "Solemne", "Quiz", "Participación" — usa el término que use el propio syllabus si es razonable.
+   - Los pesos de TODAS las evaluaciones (sumadas) deben dar 100. Si el documento da pesos como fracción (0.25), conviértelos a porcentaje (25). Si da el peso de una categoría completa repartida entre varias evaluaciones iguales (ej. "Tareas: 25% del total, hay 5 tareas"), reparte en partes iguales (5%, 5%, 5%, 5%, 5%) salvo que el documento indique pesos distintos por tarea.
+   - Si no puedes determinar pesos exactos para algo mencionado solo como "participación: poca incidencia" sin número, omítelo o asígnale un peso pequeño razonable (≤5%) y repórtalo en warnings.
+
+7. **exemption**: busca cualquier mención de "eximición", "exención de examen", "exonerado", "exempt from final exam", o reglas similares.
+   - Si el syllabus dice explícitamente una condición (ej. "se exime con NP ≥ 5.0"), créala como una regla con una condición tipo "np".
+   - Si dice algo como "promedio de pruebas ≥ 4.5 y nota mínima 4.0 en cada evaluación", créala como una regla con dos condiciones: una "catAvg" sobre la categoría correspondiente, y una "minAll".
+   - Si hay múltiples caminos alternativos para eximir ("se exime si cumple A, o alternativamente si cumple B"), crea una regla (grupo) por cada camino — son condiciones unidas por "o" entre reglas, y "y" dentro de cada regla.
+   - Si NO se menciona ninguna eximición o examen final exento, usa enabled: false y rules: [].
+   - Nunca inventes una regla de eximición que no esté respaldada por el texto. Si tienes dudas razonables, baja la confidence y explica en warnings.
+
+8. **confidence**: número entre 0 y 1.
+   - 0.9–1.0: el documento es claro, estructurado, con tabla de evaluaciones explícita y pesos en porcentaje.
+   - 0.6–0.89: información presente pero con ambigüedades menores (algún peso estimado, formato de texto en vez de tabla).
+   - 0.3–0.59: información parcial, varios campos estimados o inferidos.
+   - <0.3: el documento no parece ser un syllabus de evaluación, o la información es insuficiente. Aun así, devuelve tu mejor intento.
+
+9. **warnings**: lista en español, en frases cortas y concretas, cada estimación o ambigüedad relevante. Ejemplos: "No se encontró el peso del examen; se asumió 40%.", "Los pesos de las 3 tareas no estaban especificados individualmente; se repartieron en partes iguales.", "No se detectó regla de eximición explícita."
+
+## Importante
+
+- Responde SOLO con el JSON. Sin explicaciones, sin markdown, sin backticks.
+- Si el documento no es un syllabus o no contiene información de evaluación, igual devuelve la estructura JSON completa con tus mejores estimaciones y confidence bajo, explicando en warnings por qué.
+- Usa números, no strings, para todos los valores numéricos (weight, val, pass, npWeight, examWeight, confidence).
+- No agregues campos que no estén en el formato especificado.
+- Para "code" y "credits": si el documento no los menciona, devuelve null. No inventes valores.`;
+
+    /* Campos obligatorios que debe tener la respuesta del modelo */
+    const REQUIRED_FIELDS = ['name','scale','pass','hasExam','npWeight','examWeight','evals','exemption','confidence','warnings','code','credits'];
+
+    async function _callModel(model, messages) {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': location.origin,
+          'X-Title': 'Gradiant',
+        },
+        body: JSON.stringify({ model, messages, temperature: 0.1 }),
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(`OpenRouter ${res.status}: ${txt.slice(0, 200)}`);
+      }
+      return res.json();
+    }
+
+    function _buildMessages(input) {
+      const userContent = input.type === 'text'
+        ? [{ type: 'text', text: input.content }]
+        : [
+            { type: 'text', text: 'Analiza este syllabus y extrae la información de evaluación.' },
+            { type: 'image_url', image_url: { url: `data:${input.mimeType};base64,${input.base64}` } },
+          ];
+      return [
+        { role: 'system', content: OPENROUTER_SYSTEM_PROMPT },
+        { role: 'user',   content: userContent },
+      ];
+    }
+
+    function _parseAndValidate(raw) {
+      /* Quitar posibles backticks si el modelo los incluyó de todas formas */
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+      let parsed;
+      try { parsed = JSON.parse(cleaned); }
+      catch (e) { throw new Error(`JSON inválido en la respuesta del modelo: ${e.message}\n\nRespuesta cruda:\n${raw.slice(0, 400)}`); }
+
+      const missing = REQUIRED_FIELDS.filter(f => !(f in parsed));
+      if (missing.length) throw new Error(`Faltan campos obligatorios en la respuesta: ${missing.join(', ')}`);
+      if (!Array.isArray(parsed.evals))     throw new Error('El campo "evals" debe ser un array');
+      if (!Array.isArray(parsed.warnings))  throw new Error('El campo "warnings" debe ser un array');
+      if (typeof parsed.exemption !== 'object' || !Array.isArray(parsed.exemption?.rules))
+        throw new Error('El campo "exemption" debe ser un objeto con "rules" array');
+
+      return parsed;
+    }
+
+    async function callOpenRouter(input) {
+      if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'PEGA_TU_KEY_AQUÍ')
+        throw new Error('Falta configurar OPENROUTER_API_KEY en el código.');
+
+      const messages = _buildMessages(input);
+      const models = ['google/gemini-2.5-flash-lite', 'openai/gpt-4.1-nano'];
+      let lastError;
+
+      for (const model of models) {
+        try {
+          console.log(`[callOpenRouter] Probando modelo: ${model}`);
+          const data = await _callModel(model, messages);
+          const raw = data.choices?.[0]?.message?.content ?? '';
+          if (!raw) throw new Error('El modelo devolvió una respuesta vacía');
+          const result = _parseAndValidate(raw);
+          console.log(`[callOpenRouter] ✓ Éxito con ${model}`, result);
+          return result;
+        } catch (err) {
+          console.warn(`[callOpenRouter] Falló ${model}:`, err.message);
+          lastError = err;
+        }
+      }
+      throw new Error(`Ambos modelos fallaron. Último error: ${lastError?.message}`);
+    }
+
+    /* Exponer temporalmente para pruebas desde la consola */
+    window.callOpenRouter = callOpenRouter;
+
+    /* ── Syllabus Import Modal ─────────────────────────────────────────── */
+
+    let _sylCourse = null; // ramo destino (null = crear nuevo)
+    let _sylResult = null; // resultado parseado del modelo
+
+    function openSyllabusImport(c) {
+      _sylCourse = c || null;
+      _sylResult = null;
+      document.getElementById('syllabusModal').classList.add('open');
+      _sylStep1();
+    }
+
+    function closeSyllabusModal() {
+      document.getElementById('syllabusModal').classList.remove('open');
+    }
+
+    /* Cerrar al tocar el fondo */
+    document.getElementById('syllabusModal')?.addEventListener('click', e => {
+      if (e.target.id === 'syllabusModal') closeSyllabusModal();
+    });
+
+    /* ── Paso 1: elegir fuente ── */
+    function _sylStep1() {
+      const el = document.getElementById('sylContent');
+      el.innerHTML = `
+        <div class="bs-header">
+          <span class="bs-brand">Importar syllabus</span>
+        </div>
+        <div class="syl-body">
+          <p class="syl-sub" style="margin-bottom:18px">¿Cómo quieres ingresar el syllabus?</p>
+
+          <button class="syl-source-btn" id="sylBtnFile">
+            <div class="syl-source-icon">${ic('upload',18)}</div>
+            <div>
+              <div>Subir PDF o imagen</div>
+              <div class="syl-source-desc">Sube el archivo — el modelo lo lee directamente</div>
+            </div>
+          </button>
+          <input type="file" id="sylFileInput" accept=".pdf,image/*" style="display:none">
+
+          <button class="syl-source-btn" id="sylBtnText">
+            <div class="syl-source-icon">${ic('file-text',18)}</div>
+            <div>
+              <div>Pegar texto</div>
+              <div class="syl-source-desc">Pega el contenido del syllabus en un cuadro de texto</div>
+            </div>
+          </button>
+
+          <div id="sylTextArea" style="display:none">
+            <textarea class="syl-textarea" id="sylTextInput" placeholder="Pega aquí el texto del syllabus..."></textarea>
+            <div class="syl-actions" style="position:static;border:none;background:transparent;padding:12px 0 0">
+              <button class="syl-btn-cancel" id="sylCancelText">Cancelar</button>
+              <button class="syl-btn-apply" id="sylSendText">Analizar →</button>
+            </div>
+          </div>
+        </div>`;
+
+      document.getElementById('sylBtnFile').addEventListener('click', () => {
+        document.getElementById('sylFileInput').click();
+      });
+
+      document.getElementById('sylFileInput').addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const { base64, mimeType } = await _fileToBase64(file);
+          await _sylAnalyze({ type: 'file', mimeType, base64 });
+        } catch (err) {
+          _sylError(err.message);
+        }
+      });
+
+      document.getElementById('sylBtnText').addEventListener('click', () => {
+        document.getElementById('sylBtnText').style.display = 'none';
+        document.getElementById('sylBtnFile').style.display = 'none';
+        document.getElementById('sylTextArea').style.display = 'block';
+        document.getElementById('sylTextInput').focus();
+      });
+
+      document.getElementById('sylCancelText')?.addEventListener('click', closeSyllabusModal);
+
+      document.getElementById('sylSendText')?.addEventListener('click', async () => {
+        const text = document.getElementById('sylTextInput').value.trim();
+        if (!text) return;
+        await _sylAnalyze({ type: 'text', content: text });
+      });
+    }
+
+    /* ── Paso 2: cargando ── */
+    function _sylStep2() {
+      document.getElementById('sylContent').innerHTML = `
+        <div class="syl-loading">
+          <div class="syl-spinner"></div>
+          <div class="syl-loading-txt">Analizando syllabus con IA…<br><span style="font-size:11px;opacity:.6">Esto puede tomar unos segundos</span></div>
+        </div>`;
+    }
+
+    /* ── Llamar al modelo y pasar al paso 3 ── */
+    async function _sylAnalyze(input) {
+      _sylStep2();
+      try {
+        _sylResult = await callOpenRouter(input);
+        _sylStep3(_sylResult);
+      } catch (err) {
+        _sylError(err.message);
+      }
+    }
+
+    /* ── Paso 3: previsualización editable ── */
+    function _sylStep3(r) {
+      const conf = r.confidence >= 0.8 ? 'high' : r.confidence >= 0.5 ? 'mid' : 'low';
+      const confLabel = r.confidence >= 0.8 ? `Alta confianza (${Math.round(r.confidence*100)}%)` :
+                        r.confidence >= 0.5 ? `Confianza media (${Math.round(r.confidence*100)}%)` :
+                                              `Confianza baja (${Math.round(r.confidence*100)}%) — revisa bien`;
+
+      const evalsHtml = r.evals.map((ev, i) => `
+        <div class="syl-eval-card">
+          <input class="syl-eval-name" data-ei="${i}" data-f="name" value="${escA(ev.name)}" placeholder="Nombre">
+          <button class="syl-eval-cat" data-ei="${i}" style="background:color-mix(in srgb,${catColor(ev.cat)} 20%,transparent);color:${catColor(ev.cat)}">${esc(ev.cat)}</button>
+          <input class="syl-eval-w" data-ei="${i}" data-f="weight" inputmode="decimal" value="${ev.weight}" style="width:38px">
+          <span style="font-size:11px;color:var(--muted)">%</span>
+        </div>`).join('');
+
+      const warnsHtml = r.warnings.length
+        ? r.warnings.map(w => `<div class="syl-warn-item">${ic('alert-triangle',12)} <span>${esc(w)}</span></div>`).join('')
+        : `<div style="font-size:12px;color:var(--muted)">Sin advertencias.</div>`;
+
+      const scaleOpts = ['1-7','0-10','0-100','0-20','0-5']
+        .map(s => `<option value="${s}" ${r.scale===s?'selected':''}>${s}</option>`).join('');
+
+      document.getElementById('sylContent').innerHTML = `
+        <div class="bs-header">
+          <span class="bs-brand">Revisar antes de aplicar</span>
+        </div>
+        <div class="syl-body" id="sylPreviewBody">
+
+          <div class="syl-confidence ${conf}">${ic('check-circle',13)} ${esc(confLabel)}</div>
+
+          <div class="syl-section-title">Ramo</div>
+          <div class="syl-field-row">
+            <span class="syl-field-label">Nombre</span>
+            <input class="syl-field-inp" id="sylFName" value="${escA(r.name)}" style="width:160px;text-align:right">
+          </div>
+          <div class="syl-field-row">
+            <span class="syl-field-label">Sigla</span>
+            <input class="syl-field-inp" id="sylFCode" value="${escA(r.code || '')}" placeholder="Ej. MAT401" style="width:100px;text-align:right">
+          </div>
+          <div class="syl-field-row">
+            <span class="syl-field-label">Créditos</span>
+            <input class="syl-field-inp" id="sylFCredits" inputmode="decimal" value="${escA(r.credits ?? '')}" placeholder="—" style="width:60px;text-align:right">
+          </div>
+          <div class="syl-field-row">
+            <span class="syl-field-label">Escala</span>
+            <select class="syl-field-sel" id="sylFScale">${scaleOpts}</select>
+          </div>
+          <div class="syl-field-row">
+            <span class="syl-field-label">Nota aprobación</span>
+            <input class="syl-field-inp" id="sylFPass" inputmode="decimal" value="${escA(r.pass)}">
+          </div>
+          <div class="syl-field-row">
+            <span class="syl-field-label">Tiene examen final</span>
+            <input type="checkbox" id="sylFExam" class="cb-circle" ${r.hasExam?'checked':''}>
+          </div>
+          <div id="sylWeightRows" style="${r.hasExam?'':'display:none'}">
+            <div class="syl-field-row">
+              <span class="syl-field-label">Peso NP (%)</span>
+              <input class="syl-field-inp" id="sylFNpW" inputmode="decimal" value="${escA(r.npWeight)}">
+            </div>
+            <div class="syl-field-row">
+              <span class="syl-field-label">Peso Examen (%)</span>
+              <input class="syl-field-inp" id="sylFExW" inputmode="decimal" value="${escA(r.examWeight)}">
+            </div>
+          </div>
+
+          <div class="syl-section-title">Evaluaciones (${r.evals.length})</div>
+          <div id="sylEvalList">${evalsHtml}</div>
+
+          <div class="syl-section-title">Eximición</div>
+          <div class="syl-field-row">
+            <span class="syl-field-label">Activar eximición</span>
+            <input type="checkbox" id="sylFExemOn" class="cb-circle" ${r.exemption.enabled?'checked':''}>
+          </div>
+          ${r.exemption.enabled && r.exemption.rules.length ? `
+          <div style="font-size:12px;color:var(--muted);padding:4px 2px">
+            ${r.exemption.rules.map((rule,gi) =>
+              rule.conds.map(cd =>
+                `Regla ${gi+1}: ${cd.type==='np'?'NP':cd.type==='minAll'?'Todas las notas':`Prom. ${esc(cd.cat||'')}`} ≥ ${cd.val}`
+              ).join(' y ')
+            ).join(' <b>O</b> ')}
+          </div>` : ''}
+
+          ${r.warnings.length ? `<div class="syl-section-title">Advertencias</div>${warnsHtml}` : ''}
+
+          <div style="height:80px"></div>
+        </div>
+
+        <div class="syl-actions">
+          <button class="syl-btn-cancel" id="sylBtnCancel">Cancelar</button>
+          <button class="syl-btn-apply" id="sylBtnApply">Aplicar al ramo</button>
+        </div>`;
+
+      /* Sincronizar cambios del usuario al objeto _sylResult */
+      document.getElementById('sylFName').addEventListener('input', e => { _sylResult.name = e.target.value; });
+      document.getElementById('sylFCode').addEventListener('input', e => { _sylResult.code = e.target.value || null; });
+      document.getElementById('sylFCredits').addEventListener('input', e => { _sylResult.credits = e.target.value ? +e.target.value : null; });
+      document.getElementById('sylFScale').addEventListener('change', e => { _sylResult.scale = e.target.value; });
+      document.getElementById('sylFPass').addEventListener('input', e => { _sylResult.pass = +e.target.value; });
+      document.getElementById('sylFNpW').addEventListener('input', e => { _sylResult.npWeight = +e.target.value; });
+      document.getElementById('sylFExW').addEventListener('input', e => { _sylResult.examWeight = +e.target.value; });
+      document.getElementById('sylFExam').addEventListener('change', e => {
+        _sylResult.hasExam = e.target.checked;
+        document.getElementById('sylWeightRows').style.display = e.target.checked ? '' : 'none';
+      });
+      document.getElementById('sylFExemOn').addEventListener('change', e => { _sylResult.exemption.enabled = e.target.checked; });
+
+      document.querySelectorAll('#sylEvalList .syl-eval-name').forEach(inp => {
+        inp.addEventListener('input', e => { _sylResult.evals[+inp.dataset.ei].name = e.target.value; });
+      });
+      document.querySelectorAll('#sylEvalList .syl-eval-w').forEach(inp => {
+        inp.addEventListener('input', e => { _sylResult.evals[+inp.dataset.ei].weight = +e.target.value; });
+      });
+
+      document.getElementById('sylBtnCancel').addEventListener('click', closeSyllabusModal);
+      document.getElementById('sylBtnApply').addEventListener('click', _sylApply);
+    }
+
+    /* ── Error ── */
+    function _sylError(msg) {
+      document.getElementById('sylContent').innerHTML = `
+        <div class="bs-header"><span class="bs-brand">Error al importar</span></div>
+        <div class="syl-body">
+          <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:16px;padding:16px;color:#f87171;font-size:13px;line-height:1.5">
+            ${ic('alert-triangle',14)} ${esc(msg)}
+          </div>
+          <div class="syl-actions" style="position:static;border:none;background:transparent;padding:16px 0 0">
+            <button class="syl-btn-cancel" id="sylErrBack">Volver</button>
+            <button class="syl-btn-apply" id="sylErrRetry">Reintentar</button>
+          </div>
+        </div>`;
+      document.getElementById('sylErrBack').addEventListener('click', closeSyllabusModal);
+      document.getElementById('sylErrRetry').addEventListener('click', _sylStep1);
+    }
+
+    /* ── Confirmación personalizada (reemplaza confirm()) ── */
+    function _sylConfirmReplace(onConfirm) {
+      const name = _sylCourse?.name || '';
+      document.getElementById('sylContent').innerHTML = `
+        <div class="syl-sheet .bs-header" style="display:flex;align-items:center;gap:12px;padding:20px 22px 16px;border-bottom:1px solid rgba(255,255,255,0.08)">
+          <span style="font-size:16px;font-weight:800;letter-spacing:-.04em;color:var(--ink)">¿Reemplazar ramo?</span>
+        </div>
+        <div class="syl-body" style="padding-top:20px;padding-bottom:8px">
+          <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:18px;padding:18px;margin-bottom:16px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fbbf24">${ic('alert-triangle',17)}</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px">Se reemplazará la configuración de<br><span style="color:#fbbf24">"${esc(name)}"</span></div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.5">Las evaluaciones actuales y las notas ingresadas se eliminarán y se cargarán las del syllabus importado.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="syl-actions">
+          <button class="syl-btn-cancel" id="sylCfmBack">Volver</button>
+          <button class="syl-btn-apply" id="sylCfmOk" style="background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 4px 16px rgba(239,68,68,0.35)">Sí, reemplazar</button>
+        </div>`;
+      document.getElementById('sylCfmBack').addEventListener('click', () => _sylStep3(_sylResult));
+      document.getElementById('sylCfmOk').addEventListener('click', onConfirm);
+    }
+
+    /* ── Aplicar resultado al estado del ramo ── */
+    function _sylApply() {
+      const r = _sylResult;
+      if (!r) return;
+
+      /* Si es actualización, mostrar confirmación personalizada */
+      if (_sylCourse) { _sylConfirmReplace(_doApply); return; }
+      _doApply();
+    }
+
+    function _doApply() {
+      const r = _sylResult;
+      const btn = document.getElementById('sylBtnApply') || document.getElementById('sylCfmOk');
+      if (btn) btn.disabled = true;
+
+      /* Convertir evals del modelo al formato interno */
+      const evals = (r.evals || []).map(ev => ({
+        id: uid(),
+        name: ev.name || '',
+        cat: ev.cat || 'General',
+        weight: ev.weight ?? 0,
+        grade: '',
+      }));
+
+      /* Normalizar conds de eximición: agregar op si falta */
+      const exemption = {
+        enabled: !!r.exemption?.enabled,
+        rules: (r.exemption?.rules || []).map(rule => ({
+          conds: (rule.conds || []).map(cd => ({
+            type: cd.type || 'np',
+            op: '>=',
+            cat: cd.cat || null,
+            evalId: cd.evalId || '',
+            val: cd.val ?? '',
+          }))
+        }))
+      };
+      if (!exemption.rules.length) exemption.rules = [{ conds: [] }];
+
+      if (_sylCourse) {
+        /* Actualizar ramo existente (preservar id, color, examGrade) */
+        Object.assign(_sylCourse, {
+          name: r.name,
+          code: r.code || null,
+          credits: r.credits || null,
+          pass: r.pass,
+          hasExam: r.hasExam,
+          npWeight: r.npWeight,
+          examWeight: r.examWeight,
+          examGrade: null,
+          weightMode: 'eval',
+          catWeights: {},
+          evals,
+          exemption,
+        });
+        persist();
+        render();
+      } else {
+        /* Crear ramo nuevo */
+        const c = newCourse(r.name);
+        c.code = r.code || null;
+        c.credits = r.credits || null;
+        c.pass = r.pass;
+        c.hasExam = r.hasExam;
+        c.npWeight = r.npWeight;
+        c.examWeight = r.examWeight;
+        c.weightMode = 'eval';
+        c.catWeights = {};
+        c.evals = evals;
+        c.exemption = exemption;
+        state.courses.push(c);
+        state.active = c.id;
+        persist();
+        render();
+      }
+
+      closeSyllabusModal();
+    }
+
+    /* ── Helper: archivo → base64 ── */
+    function _fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const b64 = reader.result.split(',')[1];
+          resolve({ base64: b64, mimeType: file.type });
+        };
+        reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /* ── Si Firebase falla, la app sigue funcionando en modo local sin errores ── */
     let fbAuth = null, fbDb = null;
     try {
       const fbApp = initializeApp(firebaseConfig);
@@ -5213,6 +6039,11 @@
         cleft: '<polyline points="15 18 9 12 15 6"/>',
         cright: '<polyline points="9 18 15 12 9 6"/>',
         cdown: '<polyline points="6 9 12 15 18 9"/>',
+        upload: '<polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>',
+        'file-text': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+        'check-circle': '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+        'alert-triangle': '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+        image: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
       };
       return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:inline-block;vertical-align:middle">${d[name] || ''}</svg>`;
     }
@@ -5307,7 +6138,7 @@
 
     function newCourse(name, color) {
       return {
-        id: uid(), name: name || 'Nuevo ramo', pass: 4.0,
+        id: uid(), name: name || 'Nuevo ramo', code: null, credits: null, pass: 4.0,
         hasExam: true, npWeight: 60, examWeight: 40, examGrade: null,
         weightMode: 'eval', catWeights: {}, decimals: 1,
         color: color || nextColor(),
@@ -5340,6 +6171,8 @@
       if (c.examGrade === undefined) c.examGrade = null;
       if (c.hasExam === undefined) c.hasExam = true;
       if (!c.color) c.color = COURSE_PALETTE[(i || 0) % COURSE_PALETTE.length];
+      if (c.code === undefined) c.code = null;
+      if (c.credits === undefined) c.credits = null;
     }
     function ensureUI() { if (!state.ui) state.ui = { config: false, exem: false }; }
 
@@ -6287,10 +7120,12 @@
       panel.innerHTML = `
     <div class="course-header">
       <input class="course-name-input" id="cName" value="${escA(c.name)}" placeholder="Nombre del ramo">
+      <button class="btn-import-desktop" id="dBtnSyllabus">${ic('upload', 13)} Importar syllabus</button>
       <div class="mobile-course-actions">
         <button class="mca-btn" id="mBtnConfig">${ic('sliders', 13)} Configuración</button>
         <button class="mca-btn" id="mBtnExem">${ic('shield', 13)} Eximición</button>
         <button class="mca-btn" id="mBtnCalcs">${ic('target', 13)} Resultados</button>
+        <button class="mca-btn" id="mBtnSyllabus">${ic('upload', 13)} Importar syllabus</button>
       </div>
     </div>
     <div class="content-grid">
@@ -6302,6 +7137,8 @@
       document.getElementById('mBtnConfig')?.addEventListener('click', () => openMobileConfigSheet(c));
       document.getElementById('mBtnExem')?.addEventListener('click', () => openMobileExemSheet(c));
       document.getElementById('mBtnCalcs')?.addEventListener('click', () => openMobileCalcsSheet(c));
+      document.getElementById('mBtnSyllabus')?.addEventListener('click', () => openSyllabusImport(c));
+      document.getElementById('dBtnSyllabus')?.addEventListener('click', () => openSyllabusImport(c));
       bindEvals(c); bindMobileEvList(c); bindSettings(c); bindExem(c); bindCalcs(c); bindCollapsibles();
       const _k = calc(c), _pass = passOf(c);
       const _npW = (num(c.npWeight) || 0) / 100, _exW = (num(c.examWeight) || 0) / 100;
@@ -6396,7 +7233,17 @@
       const pass = passOf(c);
       document.querySelectorAll('.seg-btn').forEach(b => b.onclick = () => { switchMode(c, b.dataset.mode); persist(); render(); });
       const add = document.getElementById('addEv'); if (add) add.onclick = () => { c.evals.push(newEval(c)); persist(); render(); };
-      document.querySelectorAll('#evBody [data-del]').forEach(b => b.onclick = () => { c.evals.splice(+b.dataset.del, 1); persist(); render(); });
+      document.querySelectorAll('#evBody [data-del]').forEach(b => b.onclick = () => {
+        const i = +b.dataset.del;
+        const evName = c.evals[i]?.name || 'esta evaluación';
+        showModal({
+          title: 'Eliminar evaluación',
+          msg: `¿Eliminar "${evName}"? Esta acción no se puede deshacer.`,
+          confirmText: 'Eliminar',
+          danger: true,
+          onConfirm: () => { c.evals.splice(i, 1); persist(); render(); },
+        });
+      });
       document.querySelectorAll('[data-cw]').forEach(inp => { inp.addEventListener('input', () => { c.catWeights[inp.dataset.cw] = inp.value; persist(); refreshAutoW(c); refreshResults(c); }); });
       // Drag-to-reorder
       let dragIdx = null;
@@ -6562,7 +7409,17 @@
               el.style.transition = 'transform .2s ease, opacity .2s ease';
               el.style.transform = 'translateX(-110%)'; el.style.opacity = '0';
               const i = drag.idx;
-              setTimeout(() => { c.evals.splice(i, 1); persist(); render(); }, 210);
+              const evName = c.evals[i]?.name || 'esta evaluación';
+              setTimeout(() => {
+                showModal({
+                  title: 'Eliminar evaluación',
+                  msg: `¿Eliminar "${evName}"? Esta acción no se puede deshacer.`,
+                  confirmText: 'Eliminar',
+                  danger: true,
+                  onConfirm: () => { c.evals.splice(i, 1); persist(); render(); },
+                  onCancel: () => render(),
+                });
+              }, 210);
             } else { snapBack(el); }
           } else if (gesture === 'drag' && drag.active) {
             el.classList.remove('mev-dragging');
@@ -7000,10 +7857,17 @@
         const cl = rk.npEst != null ? gClass(rk.npEst, passOf(rc)) : '';
         const pct = rk.totalW > 0 ? Math.min(100, Math.round((rk.gradedW / rk.totalW) * 100)) : 0;
         const courseColor = rc.color || '#6366f1';
+        const metaParts = [];
+        if (rc.code) metaParts.push(`<span style="font-weight:700;color:${courseColor}">${esc(rc.code)}</span>`);
+        if (rc.credits) metaParts.push(`${rc.credits} cr.`);
+        const metaHtml = metaParts.length ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${metaParts.join(' · ')}</div>` : '';
         return `
           <div class="mcr-estado-item">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <div style="font-size:14px; font-weight:600; color:var(--ink); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:12px">${esc(rc.name)}</div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+              <div style="min-width:0; margin-right:12px">
+                <div style="font-size:14px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${esc(rc.name)}</div>
+                ${metaHtml}
+              </div>
               <div style="font-size:22px; font-weight:800; flex-shrink:0" class="${cl}">${np}</div>
             </div>
             <div class="mcr-estado-bar-bg">
@@ -7135,8 +7999,8 @@
           const extraSel = cd.type === 'catAvg'
             ? `<select class="msh-select" style="flex:1;min-width:0;height:34px;font-size:13px" data-mef="cat" data-g="${gi}" data-c="${ci}">${cats.map(ct => `<option value="${escA(ct)}" ${cd.cat === ct ? 'selected' : ''}>${esc(ct)}</option>`).join('')}</select>`
             : cd.type === 'eval'
-            ? `<select class="msh-select" style="flex:1;min-width:0;height:34px;font-size:13px" data-mef="evalId" data-g="${gi}" data-c="${ci}">${c.evals.map(ev => `<option value="${escA(ev.id)}" ${cd.evalId === ev.id ? 'selected' : ''}>${esc(ev.name || 'Sin nombre')}</option>`).join('')}</select>`
-            : '';
+              ? `<select class="msh-select" style="flex:1;min-width:0;height:34px;font-size:13px" data-mef="evalId" data-g="${gi}" data-c="${ci}">${c.evals.map(ev => `<option value="${escA(ev.id)}" ${cd.evalId === ev.id ? 'selected' : ''}>${esc(ev.name || 'Sin nombre')}</option>`).join('')}</select>`
+              : '';
           const res = evalCond(c, cd, k);
           const chip = res.state === 'ok' ? '<span class="chip ok" style="font-size:10px">✓</span>' : res.state === 'no' ? '<span class="chip no" style="font-size:10px">✗</span>' : '<span class="chip neu" style="font-size:10px">?</span>';
           return `<div class="msh-cond-row" style="flex-wrap:wrap;gap:6px">

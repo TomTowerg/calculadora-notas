@@ -17,6 +17,9 @@ build/
 .env
 .env.local
 
+# API keys locales — nunca subir al repo
+config.local.js
+
 # Claude Code
 .claude/
 CLAUDE.md
