@@ -5482,7 +5482,10 @@
     /* ── OpenRouter config ──────────────────────────────────────────────────
        La seguridad se controla con el límite de gasto mensual en OpenRouter
        (Settings → Limits). Para producción real, migrar a una Cloud Function.  */
-    const OPENROUTER_API_KEY = window.OPENROUTER_API_KEY || '';
+    /* Lee la key desde config.local.js únicamente (nunca localStorage) */
+    function getOpenRouterKey() {
+      return window.OPENROUTER_API_KEY || '';
+    }
 
     const OPENROUTER_SYSTEM_PROMPT = `Eres un asistente especializado en leer programas de curso (syllabus) universitarios y extraer su estructura de evaluación en un formato JSON exacto.
 
@@ -5568,21 +5571,38 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
     const REQUIRED_FIELDS = ['name','scale','pass','hasExam','npWeight','examWeight','evals','exemption','confidence','warnings','code','credits'];
 
     async function _callModel(model, messages) {
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': location.origin,
-          'X-Title': 'Gradiant',
-        },
-        body: JSON.stringify({ model, messages, temperature: 0.1 }),
-      });
-      if (!res.ok) {
-        const txt = await res.text().catch(() => '');
-        throw new Error(`OpenRouter ${res.status}: ${txt.slice(0, 200)}`);
+      const localKey = getOpenRouterKey();
+
+      if (localKey) {
+        /* Desarrollo local con config.local.js — llama directo a OpenRouter */
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': location.origin,
+            'X-Title': 'Gradiant',
+          },
+          body: JSON.stringify({ model, messages, temperature: 0.1 }),
+        });
+        if (!res.ok) {
+          const txt = await res.text().catch(() => '');
+          throw new Error(`OpenRouter ${res.status}: ${txt.slice(0, 200)}`);
+        }
+        return res.json();
+      } else {
+        /* Producción (Vercel) — proxy serverless; la key vive en el servidor */
+        const res = await fetch('/api/syllabus', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Error del servidor: ${res.status}`);
+        }
+        return res.json();
       }
-      return res.json();
     }
 
     function _buildMessages(input) {
@@ -5616,8 +5636,10 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
     }
 
     async function callOpenRouter(input) {
-      if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'PEGA_TU_KEY_AQUÍ')
-        throw new Error('Falta configurar OPENROUTER_API_KEY en el código.');
+      /* En producción sin proxy configurado, lanzar error especial */
+      const _hasLocal = !!getOpenRouterKey();
+      const _hasProxy = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
+      if (!_hasLocal && !_hasProxy) throw new Error('__NO_KEY__');
 
       const messages = _buildMessages(input);
       const models = ['google/gemini-2.5-flash-lite', 'openai/gpt-4.1-nano'];
@@ -5698,6 +5720,7 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
               <button class="syl-btn-apply" id="sylSendText">Analizar →</button>
             </div>
           </div>
+
         </div>`;
 
       document.getElementById('sylBtnFile').addEventListener('click', () => {
@@ -5729,6 +5752,7 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
         if (!text) return;
         await _sylAnalyze({ type: 'text', content: text });
       });
+
     }
 
     /* ── Paso 2: cargando ── */
@@ -5742,13 +5766,42 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
 
     /* ── Llamar al modelo y pasar al paso 3 ── */
     async function _sylAnalyze(input) {
+      /* Sin key local Y en localhost → mostrar aviso (en Vercel usa el proxy) */
+      const esLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if (!getOpenRouterKey() && esLocal) {
+        _sylConfigKey(input); return;
+      }
       _sylStep2();
       try {
         _sylResult = await callOpenRouter(input);
         _sylStep3(_sylResult);
       } catch (err) {
+        if (err.message === '__NO_KEY__') { _sylConfigKey(input); return; }
         _sylError(err.message);
       }
+    }
+
+    /* ── Paso extra: aviso cuando falta la API key ── */
+    function _sylConfigKey(_pendingInput) {
+      document.getElementById('sylContent').innerHTML = `
+        <div class="syl-sheet .bs-header" style="display:flex;align-items:center;gap:12px;padding:20px 22px 16px;border-bottom:1px solid rgba(255,255,255,0.08)">
+          <span style="font-size:16px;font-weight:800;letter-spacing:-.04em;color:var(--ink)">Función no disponible aquí</span>
+        </div>
+        <div class="syl-body" style="padding-top:18px;padding-bottom:8px">
+          <div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.18);border-radius:18px;padding:18px;line-height:1.6">
+            <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:8px">${ic('upload',15)} Importar syllabus con IA</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Esta función usa OpenRouter para leer el syllabus. La API key no puede exponerse en la web pública.</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.8">
+              Para usarla, corre la app localmente:<br>
+              <code style="background:rgba(255,255,255,.1);padding:2px 6px;border-radius:6px;font-size:11px">python -m http.server 8000</code><br>
+              y crea el archivo <code style="background:rgba(255,255,255,.1);padding:2px 6px;border-radius:6px;font-size:11px">config.local.js</code> con tu key.
+            </div>
+          </div>
+        </div>
+        <div class="syl-actions">
+          <button class="syl-btn-apply" id="sylKeyClose">Entendido</button>
+        </div>`;
+      document.getElementById('sylKeyClose').addEventListener('click', closeSyllabusModal);
     }
 
     /* ── Paso 3: previsualización editable ── */
