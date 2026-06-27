@@ -5606,12 +5606,24 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
     }
 
     function _buildMessages(input) {
-      const userContent = input.type === 'text'
-        ? [{ type: 'text', text: input.content }]
-        : [
-            { type: 'text', text: 'Analiza este syllabus y extrae la información de evaluación.' },
-            { type: 'image_url', image_url: { url: `data:${input.mimeType};base64,${input.base64}` } },
-          ];
+      let userContent;
+      if (input.type === 'text') {
+        userContent = [{ type: 'text', text: input.content }];
+      } else if (input.type === 'files') {
+        /* Múltiples archivos: un bloque image_url por cada uno */
+        userContent = [
+          { type: 'text', text: `Analiza estos ${input.files.length} archivo(s) que forman el syllabus y extrae la información de evaluación.` },
+          ...input.files.map(f => ({
+            type: 'image_url',
+            image_url: { url: `data:${f.mimeType};base64,${f.base64}` }
+          }))
+        ];
+      } else {
+        userContent = [
+          { type: 'text', text: 'Analiza este syllabus y extrae la información de evaluación.' },
+          { type: 'image_url', image_url: { url: `data:${input.mimeType};base64,${input.base64}` } },
+        ];
+      }
       return [
         { role: 'system', content: OPENROUTER_SYSTEM_PROMPT },
         { role: 'user',   content: userContent },
@@ -5653,6 +5665,8 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
           if (!raw) throw new Error('El modelo devolvió una respuesta vacía');
           const result = _parseAndValidate(raw);
           console.log(`[callOpenRouter] ✓ Éxito con ${model}`, result);
+          /* Guardar historial para refinamiento posterior */
+          _sylMessages = [...messages, { role: 'assistant', content: raw }];
           return result;
         } catch (err) {
           console.warn(`[callOpenRouter] Falló ${model}:`, err.message);
@@ -5667,8 +5681,9 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
 
     /* ── Syllabus Import Modal ─────────────────────────────────────────── */
 
-    let _sylCourse = null; // ramo destino (null = crear nuevo)
-    let _sylResult = null; // resultado parseado del modelo
+    let _sylCourse = null;   // ramo destino (null = crear nuevo)
+    let _sylResult = null;   // resultado parseado del modelo
+    let _sylMessages = null; // historial de mensajes para refinamiento
 
     function openSyllabusImport(c) {
       _sylCourse = c || null;
@@ -5700,10 +5715,11 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
             <div class="syl-source-icon">${ic('upload',18)}</div>
             <div>
               <div>Subir PDF o imagen</div>
-              <div class="syl-source-desc">Sube el archivo — el modelo lo lee directamente</div>
+              <div class="syl-source-desc">PDF, JPG, PNG — puedes seleccionar varios a la vez</div>
             </div>
           </button>
-          <input type="file" id="sylFileInput" accept=".pdf,image/*" style="display:none">
+          <input type="file" id="sylFileInput" accept=".pdf,image/*" multiple style="display:none">
+          <div id="sylFilePreview" style="display:none"></div>
 
           <button class="syl-source-btn" id="sylBtnText">
             <div class="syl-source-icon">${ic('file-text',18)}</div>
@@ -5723,19 +5739,89 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
 
         </div>`;
 
+      /* Lista acumulativa — el usuario puede agregar archivos en varias tandas */
+      let _selectedFiles = [];
+
+      function _renderFileList() {
+        const preview = document.getElementById('sylFilePreview');
+        if (!_selectedFiles.length) {
+          preview.style.display = 'none';
+          document.getElementById('sylBtnFile').style.display = '';
+          document.getElementById('sylBtnText').style.display = '';
+          return;
+        }
+        preview.style.display = 'block';
+        document.getElementById('sylBtnFile').style.display = 'none';
+        document.getElementById('sylBtnText').style.display = 'none';
+
+        preview.innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+            ${_selectedFiles.map((f, i) => `
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09)">
+                <span style="font-size:18px">${f.type === 'application/pdf' ? '📄' : '🖼️'}</span>
+                <div style="min-width:0;flex:1">
+                  <div style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</div>
+                  <div style="font-size:11px;color:var(--muted)">${(f.size/1024).toFixed(0)} KB</div>
+                </div>
+                <button data-ri="${i}" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0;font-size:15px" title="Quitar">✕</button>
+              </div>`).join('')}
+          </div>
+          <button id="sylAddMore" style="width:100%;padding:10px;border:1.5px dashed rgba(255,255,255,0.2);border-radius:14px;background:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:12px">
+            ${ic('plus',13)} Agregar otro archivo
+          </button>
+          <div class="syl-actions" style="position:static;border:none;background:transparent;padding:0">
+            <button class="syl-btn-cancel" id="sylFileClear">Cancelar</button>
+            <button class="syl-btn-apply" id="sylFileAnalyze">${ic('upload',14)} Analizar ${_selectedFiles.length} archivo${_selectedFiles.length > 1 ? 's' : ''}</button>
+          </div>`;
+
+        /* Quitar archivo individual */
+        preview.querySelectorAll('[data-ri]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            _selectedFiles.splice(+btn.dataset.ri, 1);
+            _renderFileList();
+          });
+        });
+
+        document.getElementById('sylAddMore').addEventListener('click', () => {
+          document.getElementById('sylFileInput').value = '';
+          document.getElementById('sylFileInput').click();
+        });
+
+        document.getElementById('sylFileClear').addEventListener('click', () => {
+          _selectedFiles = [];
+          document.getElementById('sylFileInput').value = '';
+          _renderFileList();
+        });
+
+        document.getElementById('sylFileAnalyze').addEventListener('click', async () => {
+          try {
+            const converted = await Promise.all(_selectedFiles.map(f => _fileToBase64(f)));
+            const filesData = converted.map((c, i) => ({ ...c, name: _selectedFiles[i].name }));
+            if (filesData.length === 1) {
+              await _sylAnalyze({ type: 'file', mimeType: filesData[0].mimeType, base64: filesData[0].base64 });
+            } else {
+              await _sylAnalyze({ type: 'files', files: filesData });
+            }
+          } catch (err) {
+            _sylError(err.message);
+          }
+        });
+      }
+
       document.getElementById('sylBtnFile').addEventListener('click', () => {
         document.getElementById('sylFileInput').click();
       });
 
-      document.getElementById('sylFileInput').addEventListener('change', async e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        try {
-          const { base64, mimeType } = await _fileToBase64(file);
-          await _sylAnalyze({ type: 'file', mimeType, base64 });
-        } catch (err) {
-          _sylError(err.message);
-        }
+      document.getElementById('sylFileInput').addEventListener('change', e => {
+        const newFiles = Array.from(e.target.files);
+        if (!newFiles.length) return;
+        /* Agregar sin duplicar por nombre */
+        newFiles.forEach(f => {
+          if (!_selectedFiles.some(x => x.name === f.name && x.size === f.size)) {
+            _selectedFiles.push(f);
+          }
+        });
+        _renderFileList();
       });
 
       document.getElementById('sylBtnText').addEventListener('click', () => {
@@ -5889,6 +5975,17 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
 
           ${r.warnings.length ? `<div class="syl-section-title">Advertencias</div>${warnsHtml}` : ''}
 
+          <div class="syl-section-title">¿Algo incorrecto?</div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <textarea class="syl-textarea" id="sylRefineInp" rows="2"
+              style="min-height:unset;height:64px;resize:none;flex:1;margin-top:0;font-size:14px"
+              placeholder='Ej: "el proyecto vale 20%, no 15%" o "falta una evaluación: control oral, 10%"'></textarea>
+            <button class="syl-btn-apply" id="sylRefineBtn"
+              style="flex:none;width:auto;padding:0 16px;height:64px;font-size:13px;white-space:nowrap">
+              ${ic('cright',14)} Refinar
+            </button>
+          </div>
+
           <div style="height:80px"></div>
         </div>
 
@@ -5920,6 +6017,19 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
 
       document.getElementById('sylBtnCancel').addEventListener('click', closeSyllabusModal);
       document.getElementById('sylBtnApply').addEventListener('click', _sylApply);
+
+      document.getElementById('sylRefineBtn').addEventListener('click', () => {
+        const msg = document.getElementById('sylRefineInp').value.trim();
+        if (!msg) return;
+        _sylRefine(msg);
+      });
+      document.getElementById('sylRefineInp').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          const msg = e.target.value.trim();
+          if (msg) _sylRefine(msg);
+        }
+      });
     }
 
     /* ── Error ── */
@@ -5937,6 +6047,43 @@ Tu única salida debe ser un objeto JSON válido, sin texto antes ni después, s
         </div>`;
       document.getElementById('sylErrBack').addEventListener('click', closeSyllabusModal);
       document.getElementById('sylErrRetry').addEventListener('click', _sylStep1);
+    }
+
+    /* ── Refinamiento: corrección en lenguaje natural ── */
+    async function _sylRefine(userMsg) {
+      if (!_sylMessages) { _sylError('No hay análisis previo para refinar.'); return; }
+
+      /* Mostrar spinner sin perder el contexto */
+      document.getElementById('sylContent').innerHTML = `
+        <div class="syl-sheet .bs-header" style="display:flex;align-items:center;gap:12px;padding:20px 22px 16px;border-bottom:1px solid rgba(255,255,255,0.08)">
+          <span style="font-size:16px;font-weight:800;letter-spacing:-.04em;color:var(--ink)">Refinando…</span>
+        </div>
+        <div class="syl-loading">
+          <div class="syl-spinner"></div>
+          <div class="syl-loading-txt">Aplicando corrección…<br>
+            <span style="font-size:11px;opacity:.6">"${esc(userMsg.length > 60 ? userMsg.slice(0,60)+'…' : userMsg)}"</span>
+          </div>
+        </div>`;
+
+      /* Añadir el mensaje del usuario al historial y llamar al modelo */
+      const messages = [..._sylMessages, { role: 'user', content: userMsg }];
+
+      const models = ['google/gemini-2.5-flash-lite', 'openai/gpt-4.1-nano'];
+      let lastError;
+      for (const model of models) {
+        try {
+          const data = await _callModel(model, messages);
+          const raw = data.choices?.[0]?.message?.content ?? '';
+          if (!raw) throw new Error('Respuesta vacía');
+          const result = _parseAndValidate(raw);
+          _sylResult = result;
+          /* Actualizar historial con la nueva respuesta */
+          _sylMessages = [...messages, { role: 'assistant', content: raw }];
+          _sylStep3(result);
+          return;
+        } catch (err) { lastError = err; }
+      }
+      _sylError(`No se pudo refinar: ${lastError?.message}`);
     }
 
     /* ── Confirmación personalizada (reemplaza confirm()) ── */
